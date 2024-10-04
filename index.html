@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBJR- Suraj Bhan Jagdish Rai</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="message-container"></div>
+    <div class="container">
+        <div id="login-container">
+            <div class="glass-panel">
+                <h2>SBJR- Suraj Bhan Jagdish Rai
+                (Agriculture Shop)</h2>
+                <div id="login-form">
+                    <input type="text" id="login-email" placeholder="Email">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button onclick="login()" class="glow-button">Login</button>
+                </div>
+                <div id="register-form" style="display: none;">
+                    <input type="text" id="register-name" placeholder="Full Name">
+                    <input type="text" id="register-email" placeholder="Email">
+                    <input type="password" id="register-password" placeholder="Password">
+                    <button onclick="register()" class="glow-button">Register</button>
+                </div>
+                <p id="auth-toggle">New user? <a href="#" onclick="toggleAuthForm()">Register here</a></p>
+            </div>
+        </div>
+
+        <div id="home-container" style="display: none;">
+            <nav class="glass-panel">
+                <a href="#" onclick="showHome()" class="nav-link">Home</a>
+                <a href="#" onclick="showShop()" class="nav-link">Shop</a>
+                <a href="#" onclick="showCart()" class="nav-link">Cart <span id="cart-count">0</span></a>
+                <a href="#" onclick="showProfile()" class="nav-link">Profile</a>
+                <a href="#" onclick="showAdminPanel()" class="nav-link admin-only" style="display: none;">Admin</a>
+                <button onclick="logout()" class="glow-button">Logout</button>
+            </nav>
+
+            <div id="content" class="glass-panel"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- Your main script -->
+    <script src="script.js"></script>
+</body>
+</html>
