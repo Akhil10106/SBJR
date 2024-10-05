@@ -360,7 +360,7 @@ nav {
 }
 
 #admin-product-list button {
-    background-color: var(--error-color);
+    background-color: var(--primary-color);
     color: #ffffff;
     border: none;
     padding: 8px 16px;
@@ -371,7 +371,7 @@ nav {
 }
 
 #admin-product-list button:hover {
-    background-color: #c0392b;
+    background-color: var(--error-color);
     box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
 }
 
