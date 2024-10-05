@@ -422,16 +422,20 @@ function showAllUsers() {
     db.collection('users').get().then((querySnapshot) => {
         const totalUsers = querySnapshot.size;
         let usersHtml = `
-            <h3>All Users (Total: ${totalUsers})</h3>
-            <table class="users-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Profile Picture</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="users-table-container">
+                <div class="users-table-header">
+                    <h3>All Users (Total: ${totalUsers})</h3>
+                    <button onclick="closeUsersTable()" class="close-button">Close</button>
+                </div>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Profile Picture</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
 
         querySnapshot.forEach((doc) => {
@@ -450,8 +454,9 @@ function showAllUsers() {
         });
 
         usersHtml += `
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         `;
 
         usersContainer.innerHTML = usersHtml;
@@ -459,6 +464,11 @@ function showAllUsers() {
         console.error("Error fetching users", error);
         usersContainer.innerHTML = '<h3>Error loading users. Please try again.</h3>';
     });
+}
+
+function closeUsersTable() {
+    const usersContainer = document.getElementById('all-users-container');
+    usersContainer.innerHTML = '';
 }
 
 function addProduct() {
