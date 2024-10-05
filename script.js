@@ -20,6 +20,7 @@ const storage = firebase.storage();
 let currentUser = null;
 let cart = [];
 
+
 function toggleAuthForm() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
