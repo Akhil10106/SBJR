@@ -36,6 +36,21 @@ function toggleAuthForm() {
     }
 }
 
+// Add these new theme management functions before the DOMContentLoaded event
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+}
+
 // Listen for auth state changes
 auth.onAuthStateChanged(user => {
     console.log("Auth state changed", user);
@@ -102,11 +117,12 @@ function login() {
         });
 }
 
-function register() {
+async function register() {
     console.log("Register function called");
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
+    const imageFile = document.getElementById('profile-image').files[0];
     
     if (!name || !email || !password) {
         showError('Please fill in all fields.');
@@ -118,24 +134,49 @@ function register() {
         return;
     }
     
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            console.log("User registered", userCredential.user);
-            return db.collection('users').doc(userCredential.user.uid).set({
-                name: name,
-                email: email,
-                isAdmin: false
-            });
-        })
-        .then(() => {
-            console.log("User data saved to Firestore");
-            showSuccess('Registration successful. You are now logged in.');
-            showHome();
-        })
-        .catch((error) => {
-            console.error("Registration error", error);
-            showError('Registration failed: ' + error.message);
+    try {
+        // Create user account
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        // Upload profile image if selected
+        let imageUrl = null;
+        if (imageFile) {
+            const storageRef = storage.ref(`profile_images/${user.uid}`);
+            await storageRef.put(imageFile);
+            imageUrl = await storageRef.getDownloadURL();
+        }
+
+        // Save user data to Firestore
+        await db.collection('users').doc(user.uid).set({
+            name: name,
+            email: email,
+            isAdmin: false,
+            profileImage: imageUrl
         });
+
+        console.log("User data saved to Firestore");
+        showSuccess('Registration successful. You are now logged in.');
+        showHome();
+    } catch (error) {
+        console.error("Registration error", error);
+        showError('Registration failed: ' + error.message);
+    }
+}
+
+function handleImagePreview(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('image-preview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Profile Image Preview" style="max-width: 100%; max-height: 200px;">`;
+        }
+        reader.readAsDataURL(file);
+    } else {
+        preview.innerHTML = '';
+    }
 }
 
 function logout() {
@@ -328,14 +369,22 @@ function showAdminPanel() {
         if (doc.exists && doc.data().isAdmin) {
             const content = `
                 <h2>Admin Panel</h2>
-                <h3>Add New Product</h3>
-                <form id="add-product-form">
-                    <input type="text" id="product-name" placeholder="Product Name" required>
-                    <textarea id="product-description" placeholder="Product Description" required></textarea>
-                    <input type="number" id="product-price" placeholder="Product Price" step="0.01" required>
-                    <input type="file" id="product-image" accept="image/*" required>
-                    <button type="submit" class="glow-button">Add Product</button>
-                </form>
+                <div id="product-form-container">
+                    <h3 id="form-title">Add New Product</h3>
+                    <form id="add-product-form">
+                        <input type="hidden" id="product-id">
+                        <input type="text" id="product-name" placeholder="Product Name" required>
+                        <textarea id="product-description" placeholder="Product Description" required></textarea>
+                        <input type="number" id="product-price" placeholder="Product Price" step="0.01" required>
+                        <input type="file" id="product-image" accept="image/*">
+                        <div id="current-image-container" style="display: none;">
+                            <p>Current Image:</p>
+                            <img id="current-image" style="max-width: 200px; margin: 10px 0;">
+                        </div>
+                        <button type="submit" class="glow-button" id="form-submit-btn">Add Product</button>
+                        <button type="button" class="glow-button" id="cancel-edit-btn" style="display: none;" onclick="cancelEdit()">Cancel Edit</button>
+                    </form>
+                </div>
                 <div id="product-list">
                     <h3>Current Products</h3>
                     <ul id="admin-product-list"></ul>
@@ -345,7 +394,12 @@ function showAdminPanel() {
 
             document.getElementById('add-product-form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                addProduct();
+                const productId = document.getElementById('product-id').value;
+                if (productId) {
+                    updateProduct(productId);
+                } else {
+                    addProduct();
+                }
             });
 
             updateAdminProductList();
@@ -396,6 +450,7 @@ function addProduct() {
     });
 }
 
+// Update the updateAdminProductList function to include edit buttons
 function updateAdminProductList() {
     console.log("Updating admin product list");
     const list = document.getElementById('admin-product-list');
@@ -406,8 +461,14 @@ function updateAdminProductList() {
             const li = document.createElement('li');
             li.innerHTML = `
                 <img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover;">
-                ${product.name} - $${product.price}
-                <button onclick="deleteProduct('${doc.id}')">Delete</button>
+                <div class="product-info">
+                    <strong>${product.name}</strong> - $${product.price}
+                    <p class="product-description">${product.description}</p>
+                </div>
+                <div class="product-actions">
+                    <button onclick="editProduct('${doc.id}')" class="edit-btn">Edit</button>
+                    <button onclick="deleteProduct('${doc.id}')" class="delete-btn">Delete</button>
+                </div>
             `;
             list.appendChild(li);
         });
@@ -426,6 +487,118 @@ function deleteProduct(productId) {
         console.error("Error deleting product", error);
         showError('Error deleting product: ' + error.message);
     });
+}
+
+// Add new function to handle editing a product
+function editProduct(productId) {
+    console.log("Editing product", productId);
+    
+    // Fetch the product data
+    db.collection('products').doc(productId).get().then((doc) => {
+        if (doc.exists) {
+            const product = doc.data();
+            
+            // Update form title and button
+            document.getElementById('form-title').textContent = 'Edit Product';
+            document.getElementById('form-submit-btn').textContent = 'Update Product';
+            
+            // Fill the form with product data
+            document.getElementById('product-id').value = productId;
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-description').value = product.description;
+            document.getElementById('product-price').value = product.price;
+            
+            // Show current image
+            const currentImageContainer = document.getElementById('current-image-container');
+            const currentImage = document.getElementById('current-image');
+            currentImageContainer.style.display = 'block';
+            currentImage.src = product.image;
+            
+            // Make image input optional
+            document.getElementById('product-image').removeAttribute('required');
+            
+            // Show cancel button
+            document.getElementById('cancel-edit-btn').style.display = 'inline-block';
+            
+            // Scroll to form
+            document.getElementById('product-form-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    }).catch(error => {
+        console.error("Error fetching product for edit", error);
+        showError('Error loading product details: ' + error.message);
+    });
+}
+
+// Add new function to handle updating a product
+function updateProduct(productId) {
+    console.log("Updating product", productId);
+    
+    const name = document.getElementById('product-name').value.trim();
+    const description = document.getElementById('product-description').value.trim();
+    const price = document.getElementById('product-price').value;
+    const imageFile = document.getElementById('product-image').files[0];
+    
+    if (!name || !description || !price) {
+        showError('Please fill in all required fields.');
+        return;
+    }
+    
+    if (isNaN(price) || price <= 0) {
+        showError('Please enter a valid price.');
+        return;
+    }
+
+    let updatePromise;
+    
+    if (imageFile) {
+        // If new image is provided, upload it first
+        const storageRef = storage.ref('product-images/' + Date.now() + '_' + imageFile.name);
+        updatePromise = storageRef.put(imageFile)
+            .then(() => storageRef.getDownloadURL())
+            .then(url => {
+                return db.collection('products').doc(productId).update({
+                    name: name,
+                    description: description,
+                    price: parseFloat(price).toFixed(2),
+                    image: url,
+                    searchTerms: name.toLowerCase().split(' ').concat(description.toLowerCase().split(' '))
+                });
+            });
+    } else {
+        // If no new image, just update other fields
+        updatePromise = db.collection('products').doc(productId).update({
+            name: name,
+            description: description,
+            price: parseFloat(price).toFixed(2),
+            searchTerms: name.toLowerCase().split(' ').concat(description.toLowerCase().split(' '))
+        });
+    }
+    
+    updatePromise.then(() => {
+        showSuccess('Product updated successfully');
+        cancelEdit();
+        updateAdminProductList();
+    }).catch(error => {
+        console.error("Error updating product", error);
+        showError('Error updating product: ' + error.message);
+    });
+}
+// Add new function to handle canceling edit
+function cancelEdit() {
+    // Reset form title and button
+    document.getElementById('form-title').textContent = 'Add New Product';
+    document.getElementById('form-submit-btn').textContent = 'Add Product';
+    
+    // Clear form
+    document.getElementById('add-product-form').reset();
+    document.getElementById('product-id').value = '';
+    
+    // Hide current image and cancel button
+    document.getElementById('current-image-container').style.display = 'none';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+    
+    // Make image input required again
+    document.getElementById('product-image').setAttribute('required', 'required');
 }
 
 function showError(message) {
@@ -452,4 +625,8 @@ function showSuccess(message) {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM content loaded");
     updateCartCount();
+    initializeTheme(); // Initialize theme when the page loads
+    
+    // Add this line to set up the image preview
+    document.getElementById('profile-image').addEventListener('change', handleImagePreview);
 });
