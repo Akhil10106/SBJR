@@ -237,6 +237,13 @@ function showHome() {
                         <p>Our mission is to support farmers and agricultural enthusiasts by providing top-notch products and expert advice.</p>
                     </div>
                     
+                    <div class="map-section">
+                        <h2>Find Us</h2>
+                        <div id="map">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d430.8667206686061!2d77.36312548457309!3d30.238965252814257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390efd81c34d8d29%3A0x7591a09260058b56!2sAgriculture%20store!5e0!3m2!1sen!2sin!4v1728130861333!5m2!1sen!2sin" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                    
                     <div class="cta-section">
                         <h2>Start Shopping Now!</h2>
                         <button onclick="showShop()" class="glow-button">Explore Our Products</button>
