@@ -647,6 +647,56 @@ nav {
     border-radius: 50%;
 }
 
+.scroll-indicator {
+    text-align: center;
+    margin-top: 20px;
+    animation: bounce 2s infinite;
+}
+
+.scroll-indicator p {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+.scroll-indicator i {
+    font-size: 1.5em;
+    color: var(--primary-color);
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.map-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.map-info i {
+    font-size: 2em;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.map-info h2 {
+    margin-bottom: 10px;
+}
+
+.map-info p {
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.8;
+}
+
 .map-section {
     margin-top: 30px;
     padding: 20px;
