@@ -399,10 +399,42 @@ nav {
     box-shadow: 0 2px 5px var(--shadow-color);
 }
 
+.users-table-container {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.users-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #2980b9;
+}
+
+.users-table-header h3 {
+    margin: 0;
+}
+
+.close-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.close-button:hover {
+    background-color: #d32f2f;
+}
+
 .users-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
 }
 
 .users-table th, .users-table td {
