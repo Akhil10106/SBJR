@@ -222,6 +222,10 @@ function showHome() {
                     <div class="welcome-section">
                         <h2>Welcome to SBJR Agriculture Shop, ${userData.name}!</h2>
                         <p>Discover the best agricultural products for your needs.</p>
+                        <div class="scroll-indicator">
+                            <p>Scroll to explore and find our location</p>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
                     
                     <div class="featured-products">
@@ -238,7 +242,11 @@ function showHome() {
                     </div>
                     
                     <div class="map-section">
-                        <h2>Find Us</h2>
+                        <div class="map-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h2>Find Us</h2>
+                            <p>Visit our store to see our wide range of products in person. Our knowledgeable staff is ready to assist you!</p>
+                        </div>
                         <div id="map">
                             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d430.8667206686061!2d77.36312548457309!3d30.238965252814257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390efd81c34d8d29%3A0x7591a09260058b56!2sAgriculture%20store!5e0!3m2!1sen!2sin!4v1728130861333!5m2!1sen!2sin" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>
