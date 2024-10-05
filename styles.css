@@ -824,6 +824,85 @@ nav {
     padding: 10px;
     resize: vertical;
 }
+/* Profile Section Styles */
+.profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--card-background);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.profile-field label {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.edit-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: var(--card-background);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.edit-form input {
+    padding: 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: 3px;
+}
+
+.cancel-btn {
+    background-color: var(--error-color);
+}
+
+.cancel-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Responsive adjustments for profile section */
+@media (max-width: 768px) {
+    .profile-field {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .edit-btn {
+        align-self: flex-end;
+    }
+}
 
 /* Admin Panel Responsive Styles */
 @media (max-width: 768px) {
