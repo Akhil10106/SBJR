@@ -48,7 +48,6 @@
     text-align: center;
 }
 
-/* Update these classes to use your variables */
 .error {
     background-color: var(--error-color);
 }
@@ -141,6 +140,7 @@ input:focus, textarea:focus {
     transform: scale(1.1);
     box-shadow: 0 4px 8px var(--shadow-color);
 }
+
 #login-form, #register-form {
     display: flex;
     flex-direction: column;
@@ -314,22 +314,6 @@ nav {
     font-size: 12px;
 }
 
-.error {
-    color: var(--error-color);
-    margin-top: 10px;
-    padding: 10px;
-    background-color: rgba(231, 76, 60, 0.1);
-    border-radius: 5px;
-}
-
-.success {
-    color: var(--success-color);
-    margin-top: 10px;
-    padding: 10px;
-    background-color: rgba(39, 174, 96, 0.1);
-    border-radius: 5px;
-}
-
 .product-details {
     display: flex;
     flex-wrap: wrap;
@@ -340,7 +324,7 @@ nav {
 .product-image-container {
     flex: 1;
     min-width: 200px;
-    max-width: 300px; /* Reduced max-width */
+    max-width: 300px;
 }
 
 .product-detail-image {
@@ -392,8 +376,8 @@ nav {
 }
 
 .cart-item-image {
-    width: 60px;  /* Reduced from 100px */
-    height: 60px; /* Reduced from 100px */
+    width: 60px;
+    height: 60px;
     object-fit: cover;
     margin-right: 15px;
     border-radius: 4px;
@@ -759,6 +743,172 @@ nav {
 #cancel-edit-btn {
     background-color: var(--error-color);
 }
+
+.product-details-page {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.product-details-container {
+    display: flex;
+    gap: 30px;
+    background-color: var(--card-background);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.product-image-container {
+    flex: 1;
+    max-width: 400px;
+}
+
+.product-detail-image {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.product-info {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.product-info h2 {
+    font-size: 2em;
+    color: var(--primary-color);
+}
+
+.product-price {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+.product-description {
+    line-height: 1.6;
+}
+
+.product-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.product-reviews {
+    background-color: var(--card-background);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.review-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#rating {
+    width: 100px;
+    padding: 5px;
+}
+
+#review-text {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    resize: vertical;
+}
+
+/* Admin Panel Responsive Styles */
+@media (max-width: 768px) {
+    #add-product-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #add-product-form input,
+    #add-product-form textarea,
+    #add-product-form button {
+        width: 100%;
+    }
+
+    #admin-product-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    #admin-product-list li img {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+        object-fit: cover;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .product-actions button {
+        flex: 1;
+    }
+
+    .users-table-container {
+        overflow-x: auto;
+    }
+
+    .users-table {
+        min-width: 600px;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 8px 4px;
+        font-size: 0.9em;
+    }
+
+    .user-profile-picture {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    #content h2,
+    #content h3 {
+        font-size: 1.2em;
+    }
+
+    .glow-button {
+        padding: 10px 16px;
+        font-size: 0.9em;
+    }
+
+    #all-users-container {
+        font-size: 0.9em;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 6px 2px;
+        font-size: 0.8em;
+    }
+
+    .user-profile-picture {
+        width: 30px;
+        height: 30px;
+    }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     nav {
