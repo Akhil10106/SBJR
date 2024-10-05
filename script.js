@@ -369,6 +369,8 @@ function showAdminPanel() {
         if (doc.exists && doc.data().isAdmin) {
             const content = `
                 <h2>Admin Panel</h2>
+                <button onclick="showAllUsers()" class="glow-button">Show All Users</button>
+                <div id="all-users-container"></div>
                 <div id="product-form-container">
                     <h3 id="form-title">Add New Product</h3>
                     <form id="add-product-form">
@@ -409,6 +411,53 @@ function showAdminPanel() {
     }).catch(error => {
         console.error("Error showing admin panel", error);
         showError('Error accessing admin panel: ' + error.message);
+    });
+}
+
+function showAllUsers() {
+    console.log("Showing all users");
+    const usersContainer = document.getElementById('all-users-container');
+    usersContainer.innerHTML = '<h3>Loading users...</h3>';
+
+    db.collection('users').get().then((querySnapshot) => {
+        const totalUsers = querySnapshot.size;
+        let usersHtml = `
+            <h3>All Users (Total: ${totalUsers})</h3>
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Profile Picture</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        querySnapshot.forEach((doc) => {
+            const userData = doc.data();
+            usersHtml += `
+                <tr>
+                    <td>${userData.name || 'N/A'}</td>
+                    <td>${userData.email || 'N/A'}</td>
+                    <td>
+                        ${userData.profileImage ? 
+                            `<img src="${userData.profileImage}" alt="Profile Picture" class="user-profile-picture" onerror="this.onerror=null; this.src='https://via.placeholder.com/50';">` : 
+                            '<img src="https://via.placeholder.com/50" alt="Default Profile Picture" class="user-profile-picture">'}
+                    </td>
+                </tr>
+            `;
+        });
+
+        usersHtml += `
+                </tbody>
+            </table>
+        `;
+
+        usersContainer.innerHTML = usersHtml;
+    }).catch((error) => {
+        console.error("Error fetching users", error);
+        usersContainer.innerHTML = '<h3>Error loading users. Please try again.</h3>';
     });
 }
 
