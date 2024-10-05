@@ -667,6 +667,7 @@ function showAllUsers() {
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Account Type</th>
                             <th>Profile Picture</th>
                         </tr>
                     </thead>
@@ -679,6 +680,7 @@ function showAllUsers() {
                 <tr>
                     <td>${userData.name || 'N/A'}</td>
                     <td>${userData.email || 'N/A'}</td>
+                    <td>${userData.isAdmin ? 'Admin' : 'Customer'}</td>
                     <td>
                         ${userData.profileImage ? 
                             `<img src="${userData.profileImage}" alt="Profile Picture" class="user-profile-picture" onerror="this.onerror=null; this.src='https://via.placeholder.com/50';">` : 
