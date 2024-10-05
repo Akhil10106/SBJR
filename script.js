@@ -199,12 +199,55 @@ function showHome() {
         return;
     }
     db.collection('users').doc(currentUser.uid).get().then(doc => {
-        console.log("User data", doc.data());
-        const content = `
-            <h2>Welcome to SBJR Agriculture Shop, ${doc.data().name}!</h2>
-            <p>Explore our products in the Shop.</p>
-        `;
-        document.getElementById('content').innerHTML = content;
+        const userData = doc.data();
+        console.log("User data", userData);
+
+        // Fetch featured products
+        db.collection('products').limit(3).get().then(querySnapshot => {
+            let featuredProducts = '';
+            querySnapshot.forEach(doc => {
+                const product = doc.data();
+                featuredProducts += `
+                    <div class="featured-product">
+                        <img src="${product.image}" alt="${product.name}" class="featured-product-image">
+                        <h3>${product.name}</h3>
+                        <p>₹${product.price}</p>
+                        <button onclick="showProductDetails('${doc.id}')" class="glow-button">View Details</button>
+                    </div>
+                `;
+            });
+
+            const content = `
+                <div class="home-content">
+                    <div class="welcome-section">
+                        <h2>Welcome to SBJR Agriculture Shop, ${userData.name}!</h2>
+                        <p>Discover the best agricultural products for your needs.</p>
+                    </div>
+                    
+                    <div class="featured-products">
+                        <h2>Featured Products</h2>
+                        <div class="featured-products-grid">
+                            ${featuredProducts}
+                        </div>
+                    </div>
+                    
+                    <div class="about-section">
+                        <h2>About SBJR Agriculture Shop</h2>
+                        <p>SBJR Agriculture Shop is your one-stop destination for high-quality agricultural products. We offer a wide range of seeds, fertilizers, tools, and equipment to meet all your farming needs.</p>
+                        <p>Our mission is to support farmers and agricultural enthusiasts by providing top-notch products and expert advice.</p>
+                    </div>
+                    
+                    <div class="cta-section">
+                        <h2>Start Shopping Now!</h2>
+                        <button onclick="showShop()" class="glow-button">Explore Our Products</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+        }).catch(error => {
+            console.error("Error fetching featured products", error);
+            showError('Error loading featured products: ' + error.message);
+        });
     }).catch(error => {
         console.error("Error fetching user data", error);
         showError('Error loading home page: ' + error.message);
@@ -244,12 +287,43 @@ function loadProducts() {
 function createProductCard(id, product) {
     return `
         <div class="product-card">
-            <img src="${product.image}" alt="${product.name}" class="product-image">
-            <div class="product-title">${product.name}</div>
-            <div class="product-price">$${product.price}</div>
+            <a href="#" onclick="showProductDetails('${id}'); return false;">
+                <img src="${product.image}" alt="${product.name}" class="product-image">
+                <div class="product-title">${product.name}</div>
+                <div class="product-price">₹${product.price}</div>
+            </a>
             <button onclick="addToCart('${id}')" class="add-to-cart">Add to Cart</button>
         </div>
     `;
+}
+
+function showProductDetails(productId) {
+    console.log("Showing product details for", productId);
+    db.collection('products').doc(productId).get().then((doc) => {
+        if (doc.exists) {
+            const product = doc.data();
+            const content = `
+                <div class="product-details">
+                    <div class="product-image-container">
+                        <img src="${product.image}" alt="${product.name}" class="product-detail-image">
+                    </div>
+                    <div class="product-info">
+                        <h2>${product.name}</h2>
+                        <p class="product-description">${product.description}</p>
+                        <p class="product-price">₹${product.price}</p>
+                        <button onclick="addToCart('${doc.id}')" class="add-to-cart glow-button">Add to Cart</button>
+                        <button onclick="showShop()" class="back-to-shop glow-button">Back to Shop</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+        } else {
+            showError('Product not found.');
+        }
+    }).catch((error) => {
+        console.error("Error getting product details", error);
+        showError('Error loading product details: ' + error.message);
+    });
 }
 
 function searchProducts() {
@@ -309,16 +383,76 @@ function showCart() {
         content += '<p>Your cart is empty</p>';
     } else {
         let total = 0;
-        content += '<ul>';
-        cart.forEach(product => {
-            content += `<li>${product.name} - $${product.price}</li>`;
-            total += Number(product.price);
+        content += '<div class="cart-items">';
+        cart.forEach((product, index) => {
+            const itemTotal = Number(product.price) * product.quantity;
+            total += itemTotal;
+            content += `
+                <div class="cart-item">
+                    <img src="${product.image}" alt="${product.name}" class="cart-item-image">
+                    <div class="cart-item-details">
+                        <h3>${product.name}</h3>
+                        <p>Price: ₹${product.price}</p>
+                        <div class="quantity-control">
+                            <button onclick="updateCartItemQuantity(${index}, -1)" class="quantity-btn">-</button>
+                            <span class="quantity">${product.quantity}</span>
+                            <button onclick="updateCartItemQuantity(${index}, 1)" class="quantity-btn">+</button>
+                        </div>
+                        <p>Item Total: ₹${itemTotal.toFixed(2)}</p>
+                        <button onclick="removeFromCart(${index})" class="remove-btn">Remove</button>
+                    </div>
+                </div>
+            `;
         });
-        content += '</ul>';
-        content += `<p>Total: $${total.toFixed(2)}</p>`;
-        content += '<button onclick="checkout()" class="glow-button">Checkout</button>';
+        content += '</div>';
+        content += `<div class="cart-summary">
+            <h3>Cart Total: ₹${total.toFixed(2)}</h3>
+            <button onclick="checkout()" class="glow-button checkout-btn">Checkout</button>
+        </div>`;
     }
     document.getElementById('content').innerHTML = content;
+}
+
+function updateCartItemQuantity(index, change) {
+    cart[index].quantity += change;
+    if (cart[index].quantity < 1) {
+        cart.splice(index, 1);
+    }
+    updateCartCount();
+    showCart();
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartCount();
+    showCart();
+}
+
+function addToCart(productId) {
+    console.log("Adding to cart", productId);
+    if (!currentUser) {
+        showError('Please log in to add items to your cart.');
+        return;
+    }
+    
+    db.collection('products').doc(productId).get().then((doc) => {
+        if (doc.exists) {
+            const product = doc.data();
+            const existingProductIndex = cart.findIndex(item => item.id === doc.id);
+            if (existingProductIndex !== -1) {
+                cart[existingProductIndex].quantity += 1;
+            } else {
+                cart.push({id: doc.id, ...product, quantity: 1});
+            }
+            updateCartCount();
+            showSuccess('Product added to cart');
+        } else {
+            showError('Product not found. Please try again.');
+        }
+    }).catch(error => {
+        console.error("Error adding to cart", error);
+        showError('Error adding product to cart: ' + error.message);
+    });
 }
 
 function checkout() {
