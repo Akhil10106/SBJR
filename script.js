@@ -496,16 +496,101 @@ function showProfile() {
     db.collection('users').doc(currentUser.uid).get().then(doc => {
         const userData = doc.data();
         const content = `
-            <h2>User Profile</h2>
-            <p>Name: ${userData.name}</p>
-            <p>Email: ${userData.email}</p>
-            <p>Account Type: ${userData.isAdmin ? 'Administrator' : 'Customer'}</p>
+            <div class="profile-container glass-panel">
+                <h2>User Profile</h2>
+                <div class="profile-info">
+                    <div class="profile-field">
+                        <label>Name:</label>
+                        <span id="profile-name">${userData.name}</span>
+                        <button onclick="editField('name')" class="edit-btn">Edit</button>
+                    </div>
+                    <div class="profile-field">
+                        <label>Email:</label>
+                        <span>${userData.email}</span>
+                    </div>
+                    <div class="profile-field">
+                        <label>Account Type:</label>
+                        <span>${userData.isAdmin ? 'Administrator' : 'Customer'}</span>
+                    </div>
+                    <div class="profile-field">
+                        <label>Password:</label>
+                        <span>********</span>
+                        <button onclick="editField('password')" class="edit-btn">Change Password</button>
+                    </div>
+                </div>
+            </div>
         `;
         document.getElementById('content').innerHTML = content;
     }).catch(error => {
         console.error("Error fetching user profile", error);
         showError('Error loading profile: ' + error.message);
     });
+}
+
+function editField(field) {
+    const profileContainer = document.querySelector('.profile-container');
+    let currentValue = field === 'name' ? document.getElementById('profile-name').textContent : '';
+    
+    const formHtml = `
+        <form id="edit-${field}-form" class="edit-form">
+            <input type="${field === 'password' ? 'password' : 'text'}" id="new-${field}" 
+                value="${field === 'password' ? '' : currentValue}" 
+                placeholder="${field === 'password' ? 'New Password' : `New ${field.charAt(0).toUpperCase() + field.slice(1)}`}" required>
+            ${field === 'password' ? `
+                <input type="password" id="confirm-password" placeholder="Confirm New Password" required>
+            ` : ''}
+            <button type="submit" class="glow-button">Save</button>
+            <button type="button" onclick="cancelEdit()" class="glow-button cancel-btn">Cancel</button>
+        </form>
+    `;
+    
+    profileContainer.insertAdjacentHTML('beforeend', formHtml);
+    document.getElementById(`edit-${field}-form`).addEventListener('submit', (e) => updateField(e, field));
+}
+
+function updateField(e, field) {
+    e.preventDefault();
+    const newValue = document.getElementById(`new-${field}`).value;
+    
+    if (field === 'password') {
+        const confirmPassword = document.getElementById('confirm-password').value;
+        if (newValue !== confirmPassword) {
+            showError('Passwords do not match');
+            return;
+        }
+        updatePassword(newValue);
+    } else {
+        updateProfile(field, newValue);
+    }
+}
+
+function updateProfile(field, newValue) {
+    db.collection('users').doc(currentUser.uid).update({
+        [field]: newValue
+    }).then(() => {
+        showSuccess(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`);
+        showProfile();
+    }).catch(error => {
+        console.error(`Error updating ${field}`, error);
+        showError(`Error updating ${field}: ${error.message}`);
+    });
+}
+
+function updatePassword(newPassword) {
+    currentUser.updatePassword(newPassword).then(() => {
+        showSuccess('Password updated successfully');
+        showProfile();
+    }).catch(error => {
+        console.error('Error updating password', error);
+        showError(`Error updating password: ${error.message}`);
+    });
+}
+
+function cancelEdit() {
+    const editForm = document.querySelector('.edit-form');
+    if (editForm) {
+        editForm.remove();
+    }
 }
 
 function showAdminPanel() {
