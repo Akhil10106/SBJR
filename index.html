@@ -24,6 +24,11 @@
                     <input type="text" id="register-name" placeholder="Full Name">
                     <input type="text" id="register-email" placeholder="Email">
                     <input type="password" id="register-password" placeholder="Password">
+                    <div class="image-upload-container">
+                        <label for="profile-image">Profile Image:</label>
+                        <input type="file" id="profile-image" accept="image/*">
+                        <div id="image-preview"></div>
+                    </div>
                     <button onclick="register()" class="glow-button">Register</button>
                 </div>
                 <p id="auth-toggle">New user? <a href="#" onclick="toggleAuthForm()">Register here</a></p>
@@ -38,6 +43,9 @@
                 <a href="#" onclick="showProfile()" class="nav-link">Profile</a>
                 <a href="#" onclick="showAdminPanel()" class="nav-link admin-only" style="display: none;">Admin</a>
                 <button onclick="logout()" class="glow-button">Logout</button>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    🌓
+                </button>
             </nav>
 
             <div id="content" class="glass-panel"></div>
