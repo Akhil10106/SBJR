@@ -1,4 +1,5 @@
-:root {
+/* Theme Variables */
+:root[data-theme="light"] {
     --primary-color: #3498db;
     --secondary-color: #2ecc71;
     --background-color: #f5f7fa;
@@ -7,6 +8,25 @@
     --shadow-color: rgba(0, 0, 0, 0.1);
     --error-color: #e74c3c;
     --success-color: #27ae60;
+    --input-bg: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --nav-link-hover: #3498db;
+}
+
+:root[data-theme="dark"] {
+    --primary-color: #2980b9;
+    --secondary-color: #27ae60;
+    --background-color: #1a1a1a;
+    --text-color: #ffffff;
+    --card-background: #2c2c2c;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --error-color: #c0392b;
+    --success-color: #219a52;
+    --input-bg: #333333;
+    --glass-bg: rgba(30, 30, 30, 0.7);
+    --glass-border: rgba(70, 70, 70, 0.3);
+    --nav-link-hover: #2980b9;
 }
 
 #message-container {
@@ -47,6 +67,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
@@ -56,11 +77,13 @@ body {
 }
 
 .glass-panel {
-    background-color: var(--card-background);
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 10px 30px var(--shadow-color);
     transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
 .glass-panel:hover {
@@ -80,8 +103,8 @@ input, textarea {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
-    background-color: var(--background-color);
-    border: 1px solid #dfe6e9;
+    background-color: var(--input-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 5px;
     color: var(--text-color);
     font-size: 16px;
@@ -92,6 +115,31 @@ input:focus, textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    border-radius: 50%;
+    background: var(--card-background);
+    color: var(--text-color);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px var(--shadow-color);
 }
 #login-form, #register-form {
     display: flex;
@@ -226,6 +274,22 @@ nav {
     font-weight: bold;
 }
 
+.product-info {
+    flex-grow: 1;
+}
+
+.product-description {
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin: 5px 0;
+}
+
+.product-actions {
+    display: flex;
+    gap: 10px;
+}
+
 .add-to-cart {
     background-color: var(--secondary-color);
     color: #ffffff;
@@ -287,12 +351,12 @@ nav {
 #admin-product-list li {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
+    gap: 20px;
     padding: 15px;
+    margin-bottom: 15px;
     background-color: var(--card-background);
     border-radius: 10px;
-    box-shadow: 0 5px 15px var(--shadow-color);
+    box-shadow: 0 2px 5px var(--shadow-color);
 }
 
 #admin-product-list button {
@@ -311,6 +375,51 @@ nav {
     box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
 }
 
+.edit-btn, .delete-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.delete-btn {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.edit-btn:hover, .delete-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+#add-product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: var(--card-background);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+#current-image-container {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: 5px;
+}
+
+#cancel-edit-btn {
+    background-color: var(--error-color);
+}
 /* Responsive design */
 @media (max-width: 768px) {
     nav {
