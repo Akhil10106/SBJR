@@ -499,59 +499,136 @@ function checkout() {
         return;
     }
     
-    // Here you would typically process the order, save it to the database, etc.
-    // For this example, we'll just clear the cart
-    cart = [];
-    updateCartCount();
-    showSuccess('Order placed successfully! Thank you for your purchase.');
-    showHome();
+    // Generate a random coupon code
+    const couponCode = generateCouponCode();
+    
+    // Calculate total amount
+    const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    
+    // Save the coupon code to Firebase
+    saveCouponToFirebase(couponCode, totalAmount)
+        .then(() => {
+            // Display the coupon code to the user
+            displayCouponCode(couponCode, totalAmount);
+        })
+        .catch(error => {
+            console.error("Error saving coupon", error);
+            showError('Error processing checkout: ' + error.message);
+        });
+}
+
+function generateCouponCode() {
+    return 'SBJR-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+}
+
+function saveCouponToFirebase(couponCode, amount) {
+    return db.collection('coupons').add({
+        code: couponCode,
+        amount: amount,
+        userEmail: currentUser.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        used: false,
+        cartItems: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+        }))
+    });
+}
+
+function displayCouponCode(couponCode, amount) {
+    let cartItemsHtml = cart.map(item => `
+        <li>${item.name} - Quantity: ${item.quantity} - Price: ₹${(item.price * item.quantity).toFixed(2)}</li>
+    `).join('');
+
+    let content = `
+        <h2>Checkout Complete</h2>
+        <p>Your order total: ₹${amount.toFixed(2)}</p>
+        <h3>Order Items:</h3>
+        <ul>${cartItemsHtml}</ul>
+        <p>Here's your coupon code:</p>
+        <div class="coupon-code">${couponCode}</div>
+        <button onclick="copyCouponCode('${couponCode}')" class="glow-button">Copy Code</button>
+        <p>Copy this code to complete your order and empty your cart.</p>
+    `;
+    document.getElementById('content').innerHTML = content;
+}
+
+function copyCouponCode(couponCode) {
+    navigator.clipboard.writeText(couponCode).then(() => {
+        showSuccess('Coupon code copied to clipboard!');
+        // Clear the cart
+        cart = [];
+        updateCartCount();
+        showHome();
+    }, (err) => {
+        console.error('Could not copy text: ', err);
+        showError('Failed to copy coupon code. Please try again.');
+    });
 }
 
 function showProfile() {
     console.log("Showing profile");
-    if (!currentUser) {
-        console.error("No user logged in");
-        showError('Please log in to view your profile.');
-        return;
-    }
     db.collection('users').doc(currentUser.uid).get().then(doc => {
-        const userData = doc.data();
-        const content = `
-            <div class="profile-container glass-panel">
-                <h2>User Profile</h2>
-                <div class="profile-image-container">
-                    <img src="${userData.profileImage || 'path/to/default/image.jpg'}" alt="Profile Picture" class="profile-image">
-                    <button onclick="editField('profileImage')" class="edit-btn">Change Picture</button>
-                </div>
+        if (doc.exists) {
+            const userData = doc.data();
+            let content = `
+                <h2>Profile</h2>
                 <div class="profile-info">
-                    <div class="profile-field">
-                        <label>Name:</label>
-                        <span id="profile-name">${userData.name}</span>
-                        <button onclick="editField('name')" class="edit-btn">Edit</button>
-                    </div>
-                    <div class="profile-field">
-                        <label>Email:</label>
-                        <span>${userData.email}</span>
-                    </div>
-                    <div class="profile-field">
-                        <label>Account Type:</label>
-                        <span>${userData.isAdmin ? 'Administrator' : 'Customer'}</span>
-                    </div>
-                    <div class="profile-field">
-                        <label>Password:</label>
-                        <span>********</span>
-                        <button onclick="editField('password')" class="edit-btn">Change Password</button>
+                    <img src="${userData.profilePicture || 'default-profile-picture.jpg'}" alt="Profile Picture" class="profile-picture">
+                    <div class="profile-details">
+                        <p><strong>Name:</strong> ${userData.name}</p>
+                        <p><strong>Email:</strong> ${currentUser.email}</p>
                     </div>
                 </div>
-            </div>
-        `;
-        document.getElementById('content').innerHTML = content;
+                <h3>Your Coupons</h3>
+                <div id="user-coupons"></div>
+            `;
+            document.getElementById('content').innerHTML = content;
+            loadUserCoupons();
+        } else {
+            showError('User profile not found');
+        }
     }).catch(error => {
-        console.error("Error fetching user profile", error);
+        console.error("Error loading profile", error);
         showError('Error loading profile: ' + error.message);
     });
 }
 
+function loadUserCoupons() {
+    db.collection('coupons')
+        .where('userEmail', '==', currentUser.email)
+        .orderBy('createdAt', 'desc')
+        .get()
+        .then(querySnapshot => {
+            let couponsHtml = '<ul class="coupon-list">';
+            querySnapshot.forEach(doc => {
+                const coupon = doc.data();
+                let cartItemsHtml = coupon.cartItems.map(item => `
+                    <li>${item.name} - Quantity: ${item.quantity} - Price: ₹${(item.price * item.quantity).toFixed(2)}</li>
+                `).join('');
+
+                couponsHtml += `
+                    <li>
+                        <span class="coupon-code">${coupon.code}</span>
+                        <span class="coupon-amount">₹${coupon.amount.toFixed(2)}</span>
+                        <span class="coupon-status">${coupon.used ? 'Used' : 'Available'}</span>
+                        <div class="coupon-items">
+                            <strong>Items:</strong>
+                            <ul>${cartItemsHtml}</ul>
+                        </div>
+                    </li>
+                `;
+            });
+            couponsHtml += '</ul>';
+            document.getElementById('user-coupons').innerHTML = couponsHtml;
+        })
+        .catch(error => {
+            console.error("Error loading coupons", error);
+            showError('Error loading coupons: ' + error.message);
+        });
+}
 function editField(field) {
     let currentValue = '';
     let inputType = 'text';
