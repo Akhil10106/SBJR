@@ -1347,3 +1347,58 @@ nav {
 .glass-panel, .product-card {
     animation: fadeIn 0.5s ease-out;
 }
+
+.coupon-code {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+    background-color: var(--card-background);
+    padding: 10px 20px;
+    border: 2px dashed var(--primary-color);
+    border-radius: 5px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.coupon-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.coupon-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: var(--card-background);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.coupon-list .coupon-code {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.coupon-list .coupon-amount {
+    color: var(--secondary-color);
+}
+
+.coupon-list .coupon-status {
+    font-style: italic;
+}
+
+.coupon-items {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.coupon-items ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.coupon-items li {
+    margin-bottom: 5px;
+}
