@@ -1044,48 +1044,84 @@ nav {
 }
 /* Profile Section Styles */
 .profile-container {
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-}
-
-.profile-info {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.profile-field {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
     background-color: var(--card-background);
-    border-radius: 5px;
-    box-shadow: 0 2px 4px var(--shadow-color);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px var(--shadow-color);
 }
 
-.profile-field label {
-    font-weight: bold;
-    color: var(--primary-color);
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
 .profile-image-container {
-    text-align: center;
-    margin-bottom: 20px;
+    position: relative;
+    margin-right: 30px;
 }
 
-.profile-image {
+#profile-image {
     width: 150px;
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--primary-color);
-    box-shadow: 0 0 10px var(--shadow-color);
 }
 
-.profile-image-container .edit-btn {
-    margin-top: 10px;
+.change-image-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.3s ease;
+}
+
+.change-image-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.profile-name-email h2 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.profile-name-email p {
+    margin: 5px 0 0;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.profile-details {
+    margin-bottom: 30px;
+}
+
+.profile-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: var(--glass-bg);
+    border-radius: 5px;
+}
+
+.field-label {
+    font-weight: bold;
+    width: 100px;
+    color: var(--text-color);
+}
+
+.field-value {
+    flex-grow: 1;
+    color: var(--text-color);
 }
 
 .edit-btn {
@@ -1095,37 +1131,363 @@ nav {
     padding: 5px 10px;
     border-radius: 3px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 0.8em;
+    transition: background-color 0.3s ease;
 }
 
 .edit-btn:hover {
     background-color: var(--primary-color);
 }
 
-.edit-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
+.profile-coupons {
+    background-color: var(--glass-bg);
     padding: 20px;
+    border-radius: 5px;
+}
+
+.profile-coupons h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+@media (max-width: 600px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-image-container {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .profile-field {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .field-label {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .edit-btn {
+        margin-top: 10px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.glass-panel, .product-card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.coupon-code {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+    background-color: var(--card-background);
+    padding: 10px 20px;
+    border: 2px dashed var(--primary-color);
+    border-radius: 5px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.coupon-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.coupon-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
     background-color: var(--card-background);
     border-radius: 5px;
     box-shadow: 0 2px 4px var(--shadow-color);
 }
 
-.edit-form input {
+.coupon-list .coupon-code {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.coupon-list .coupon-amount {
+    color: var(--secondary-color);
+}
+
+.coupon-list .coupon-status {
+    font-style: italic;
+}
+
+.coupon-items {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.coupon-items ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.coupon-items li {
+    margin-bottom: 5px;
+}
+
+#register-form {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#register-form input {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--card-background);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.profile-image-container {
+    position: relative;
+    margin-right: 30px;
+}
+
+#profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+}
+
+.change-image-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.3s ease;
+}
+
+.change-image-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.profile-name-email h2 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.profile-name-email p {
+    margin: 5px 0 0;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.profile-details {
+    margin-bottom: 30px;
+}
+
+.profile-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: var(--glass-bg);
+    border-radius: 5px;
+}
+
+.field-label {
+    font-weight: bold;
+    width: 100px;
+    color: var(--text-color);
+}
+
+.field-value {
+    flex-grow: 1;
+    color: var(--text-color);
+}
+
+.edit-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.3s ease;
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.profile-coupons {
+    background-color: var(--glass-bg);
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.profile-coupons h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+@media (max-width: 600px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-image-container {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .profile-field {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .field-label {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .edit-btn {
+        margin-top: 10px;
+    }
+}
+
+#profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.change-image-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.change-image-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.profile-details p {
+    margin-bottom: 10px;
+}
+
+.edit-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.reauthentication-form,
+.password-change-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.reauthentication-form input,
+.password-change-form input {
     padding: 10px;
     border: 1px solid var(--glass-border);
-    border-radius: 3px;
+    border-radius: 5px;
 }
 
-.cancel-btn {
-    background-color: var(--error-color);
+.reauthentication-form button,
+.password-change-form button {
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.cancel-btn:hover {
-    background-color: #c0392b;
+.reauthentication-form button:hover,
+.password-change-form button:hover {
+    background-color: var(--secondary-color);
 }
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .nav-link {
+        width: 100%;
+        text-align: center;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
 /* Forgot Password Link Styles */
 .forgot-password-link {
     display: inline-block;
@@ -1313,92 +1675,4 @@ nav {
         width: 30px;
         height: 30px;
     }
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    nav {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .nav-link {
-        width: 100%;
-        text-align: center;
-    }
-
-    .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.glass-panel, .product-card {
-    animation: fadeIn 0.5s ease-out;
-}
-
-.coupon-code {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--primary-color);
-    background-color: var(--card-background);
-    padding: 10px 20px;
-    border: 2px dashed var(--primary-color);
-    border-radius: 5px;
-    margin: 20px 0;
-    text-align: center;
-}
-
-.coupon-list {
-    list-style-type: none;
-    padding: 0;
-}
-
-.coupon-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: var(--card-background);
-    border-radius: 5px;
-    box-shadow: 0 2px 4px var(--shadow-color);
-}
-
-.coupon-list .coupon-code {
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-.coupon-list .coupon-amount {
-    color: var(--secondary-color);
-}
-
-.coupon-list .coupon-status {
-    font-style: italic;
-}
-
-.coupon-items {
-    margin-top: 10px;
-    font-size: 0.9em;
-}
-
-.coupon-items ul {
-    list-style-type: none;
-    padding-left: 20px;
-}
-
-.coupon-items li {
-    margin-bottom: 5px;
 }
