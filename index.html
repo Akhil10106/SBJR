@@ -24,6 +24,13 @@
                     <input type="text" id="register-name" placeholder="Full Name">
                     <input type="text" id="register-email" placeholder="Email">
                     <input type="password" id="register-password" placeholder="Password">
+                    <div class="image-upload-container">
+                        <label for="register-image" class="image-upload-label">
+                            <i class="fas fa-upload"></i> Upload Profile Picture
+                        </label>
+                        <input type="file" id="register-image" accept="image/*" style="display: none;">
+                    </div>
+                    <div id="register-image-preview"></div>
                     <button onclick="register()" class="glow-button">Register</button>
                 </div>
                 <div id="forgot-password-form" style="display: none;">
