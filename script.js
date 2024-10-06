@@ -22,17 +22,21 @@ let cart = [];
 
 
 function toggleAuthForm() {
-    const loginForm = document.getElementById('login-form');
+    const loginContainer = document.getElementById('login-container');
     const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const forgotPasswordForm = document.getElementById('forgot-password-form');
     const authToggle = document.getElementById('auth-toggle');
 
     if (loginForm.style.display !== 'none') {
         loginForm.style.display = 'none';
+        forgotPasswordForm.style.display = 'none';
         registerForm.style.display = 'block';
         authToggle.innerHTML = 'Already have an account? <a href="#" onclick="toggleAuthForm()">Login here</a>';
     } else {
-        loginForm.style.display = 'block';
         registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        forgotPasswordForm.style.display = 'none';
         authToggle.innerHTML = 'New user? <a href="#" onclick="toggleAuthForm()">Register here</a>';
     }
 }
@@ -1080,6 +1084,35 @@ function updateSeasonDisplay() {
     seasonsHTML += '<p>Find products suitable for these seasons!</p>';
 
     seasonDisplay.innerHTML = seasonsHTML;
+}
+
+function showForgotPasswordForm() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('forgot-password-form').style.display = 'block';
+}
+
+function showLoginForm() {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('forgot-password-form').style.display = 'none';
+}
+
+function resetPassword() {
+    const email = document.getElementById('reset-email').value.trim();
+    if (!email) {
+        showError('Please enter your email address.');
+        return;
+    }
+
+    auth.sendPasswordResetEmail(email)
+        .then(() => {
+            console.log('Password reset email sent successfully');
+            showSuccess('Password reset email sent. Please check your inbox and spam folder.');
+            showLoginForm();
+        })
+        .catch((error) => {
+            console.error("Password reset error", error);
+            showError('Password reset failed: ' + error.message);
+        });
 }
 
 // Initialize the application
