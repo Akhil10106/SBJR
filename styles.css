@@ -1126,6 +1126,97 @@ nav {
 .cancel-btn:hover {
     background-color: #c0392b;
 }
+/* Forgot Password Link Styles */
+.forgot-password-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.forgot-password-link:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+/* Forgot Password Link Styles */
+#login-form .forgot-password-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+#login-form .forgot-password-link:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+/* Forgot Password Form Styles */
+#forgot-password-form {
+    display: none;
+    animation: fadeIn 0.5s ease-out;
+}
+
+#forgot-password-form input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background-color: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 5px;
+    color: var(--text-color);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+#forgot-password-form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+#forgot-password-form button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#forgot-password-form button:hover {
+    background-color: var(--secondary-color);
+}
+
+#forgot-password-form button.back-to-login {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--glass-border);
+}
+
+#forgot-password-form button.back-to-login:hover {
+    background-color: var(--glass-bg);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* Responsive adjustments for profile section */
 @media (max-width: 768px) {
