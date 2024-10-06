@@ -917,11 +917,52 @@ function showSuccess(message) {
     setTimeout(() => successElement.remove(), 5000);
 }
 
+function updateSeasonDisplay() {
+    const seasonDisplay = document.getElementById('season-display');
+    const now = new Date();
+    const month = now.getMonth();
+
+    let currentSeasons = [];
+
+    // Define seasons based on typical Indian crop cycles
+    if (month >= 5 && month <= 8) {  // June to September
+        currentSeasons.push('Kharif (Monsoon Crop) Season');
+        currentSeasons.push('Rice Sowing Season');
+        currentSeasons.push('Cotton Sowing Season');
+    }
+    if (month >= 9 && month <= 11) {  // October to December
+        currentSeasons.push('Rabi Crop Sowing Season');
+        currentSeasons.push('Wheat Sowing Season');
+    }
+    if (month >= 0 && month <= 2) {  // January to March
+        currentSeasons.push('Rabi Crop Growing Season');
+        currentSeasons.push('Wheat Growing Season');
+    }
+    if (month >= 2 && month <= 4) {  // March to May
+        currentSeasons.push('Rabi Crop Harvesting Season');
+        currentSeasons.push('Zaid Crop Season');
+    }
+    if (month === 4 || month === 5) {  // May to June
+        currentSeasons.push('Kharif Crop Preparation Season');
+    }
+
+    // Display the seasons
+    let seasonsHTML = '<h3>Current Agricultural Seasons:</h3><ul>';
+    currentSeasons.forEach(season => {
+        seasonsHTML += `<li>${season}</li>`;
+    });
+    seasonsHTML += '</ul>';
+    seasonsHTML += '<p>Find products suitable for these seasons!</p>';
+
+    seasonDisplay.innerHTML = seasonsHTML;
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM content loaded");
     updateCartCount();
     initializeTheme(); // Initialize theme when the page loads
+    updateSeasonDisplay();
     
     // Add this line to set up the image preview
     document.getElementById('profile-image').addEventListener('change', handleImagePreview);
