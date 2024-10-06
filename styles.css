@@ -233,6 +233,8 @@ nav {
     margin-right: 10px;
 }
 
+
+
 /* Seasons */
 
 #season-display {
@@ -991,6 +993,24 @@ nav {
 .profile-field label {
     font-weight: bold;
     color: var(--primary-color);
+}
+
+.profile-image-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 10px var(--shadow-color);
+}
+
+.profile-image-container .edit-btn {
+    margin-top: 10px;
 }
 
 .edit-btn {
