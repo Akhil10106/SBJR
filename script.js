@@ -761,18 +761,14 @@ function updateProfile(updates) {
 }
 
 function updateProfileImage(file) {
-    const storageRef = storage.ref('profile-images/' + currentUser.uid + '/' + file.name);
-    const userRef = db.collection('users').doc(currentUser.uid);
-
+    const storageRef = storage.ref('profile_images/' + currentUser.uid);
     storageRef.put(file).then(() => {
         return storageRef.getDownloadURL();
     }).then(url => {
-        const updates = { photoURL: url };
-        // Update Firebase Auth profile
-        return currentUser.updateProfile(updates).then(() => {
-            // Update Firestore database
-            return userRef.update(updates);
-        });
+        return Promise.all([
+            currentUser.updateProfile({photoURL: url}),
+            db.collection('users').doc(currentUser.uid).update({photoURL: url})
+        ]);
     }).then(() => {
         showSuccess('Profile image updated successfully');
         showProfile(); // Refresh the profile view
@@ -885,9 +881,9 @@ function showAllUsers() {
             usersHTML += `
                 <tr>
                     <td>
-                        <img src="${userData.profileImage || 'path/to/default/image.jpg'}" alt="${userData.name}" class="user-profile-picture">
+                        <img src="${userData.photoURL || 'https://via.placeholder.com/50'}" alt="${userData.name}" class="user-profile-picture">
                     </td>
-                    <td>${userData.name}</td>
+                    <td>${userData.name || 'N/A'}</td>
                     <td>${userData.email}</td>
                     <td>${userData.isAdmin ? 'Admin' : 'Customer'}</td>
                     <td>
@@ -931,7 +927,7 @@ function viewUserDetails(userId) {
             const userDetailsHTML = `
                 <div class="user-details">
                     <h3>User Details</h3>
-                    <img src="${userData.profileImage || 'path/to/default/image.jpg'}" alt="${userData.name}" class="user-profile-picture-large">
+                    <img src="${userData.photoURL || 'https://via.placeholder.com/150'}" alt="${userData.name}" class="user-profile-picture-large">
                     <p><strong>Name:</strong> ${userData.name || 'Not available'}</p>
                     <p><strong>Email:</strong> ${userData.email || 'Not available'}</p>
                     <p><strong>Account Type:</strong> ${userData.isAdmin ? 'Admin' : 'Customer'}</p>
