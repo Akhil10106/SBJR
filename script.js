@@ -677,56 +677,112 @@ function showAdminPanel() {
 
 function showAllUsers() {
     console.log("Showing all users");
-    const usersContainer = document.getElementById('all-users-container');
-    usersContainer.innerHTML = '<h3>Loading users...</h3>';
+    const content = document.getElementById('content');
+    content.innerHTML = '<h2>All Users</h2>';
+    
+    const usersContainer = document.createElement('div');
+    usersContainer.id = 'all-users-container';
+    content.appendChild(usersContainer);
 
     db.collection('users').get().then((querySnapshot) => {
-        const totalUsers = querySnapshot.size;
-        let usersHtml = `
+        let usersHTML = `
             <div class="users-table-container">
-                <div class="users-table-header">
-                    <h3>All Users (Total: ${totalUsers})</h3>
-                    <button onclick="closeUsersTable()" class="close-button">Close</button>
-                </div>
                 <table class="users-table">
                     <thead>
                         <tr>
+                            <th>Profile</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Account Type</th>
-                            <th>Profile Picture</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
         `;
-
+        
         querySnapshot.forEach((doc) => {
             const userData = doc.data();
-            usersHtml += `
+            usersHTML += `
                 <tr>
-                    <td>${userData.name || 'N/A'}</td>
-                    <td>${userData.email || 'N/A'}</td>
+                    <td>
+                        <img src="${userData.profileImage || 'path/to/default/image.jpg'}" alt="${userData.name}" class="user-profile-picture">
+                    </td>
+                    <td>${userData.name}</td>
+                    <td>${userData.email}</td>
                     <td>${userData.isAdmin ? 'Admin' : 'Customer'}</td>
                     <td>
-                        ${userData.profileImage ? 
-                            `<img src="${userData.profileImage}" alt="Profile Picture" class="user-profile-picture" onerror="this.onerror=null; this.src='https://via.placeholder.com/50';">` : 
-                            '<img src="https://via.placeholder.com/50" alt="Default Profile Picture" class="user-profile-picture">'}
+                        <button onclick="viewUserDetails('${doc.id}')" class="view-btn">View</button>
+                        ${!userData.isAdmin ? `<button onclick="deleteUser('${doc.id}')" class="delete-btn">Delete</button>` : ''}
                     </td>
                 </tr>
             `;
         });
-
-        usersHtml += `
+        
+        usersHTML += `
                     </tbody>
                 </table>
             </div>
+            <button onclick="showAdminPanel()" class="glow-button">Back to Admin Panel</button>
         `;
-
-        usersContainer.innerHTML = usersHtml;
+        
+        usersContainer.innerHTML = usersHTML;
     }).catch((error) => {
         console.error("Error fetching users", error);
-        usersContainer.innerHTML = '<h3>Error loading users. Please try again.</h3>';
+        showError('Error fetching users: ' + error.message);
     });
+}
+
+function viewUserDetails(userId) {
+    console.log("Viewing user details", userId);
+    db.collection('users').doc(userId).get().then((doc) => {
+        if (doc.exists) {
+            const userData = doc.data();
+            console.log("User data:", userData); // For debugging
+
+            // Check if createdAt exists and is a valid timestamp
+            const joinedDate = userData.createdAt && userData.createdAt.toDate ? 
+                new Date(userData.createdAt.toDate()).toLocaleDateString() : 
+                'Not available';
+
+            const userDetailsHTML = `
+                <div class="user-details">
+                    <h3>User Details</h3>
+                    <img src="${userData.profileImage || 'path/to/default/image.jpg'}" alt="${userData.name}" class="user-profile-picture-large">
+                    <p><strong>Name:</strong> ${userData.name || 'Not available'}</p>
+                    <p><strong>Email:</strong> ${userData.email || 'Not available'}</p>
+                    <p><strong>Account Type:</strong> ${userData.isAdmin ? 'Admin' : 'Customer'}</p>
+                    <p><strong>Joined:</strong> ${joinedDate}</p>
+                    ${!userData.isAdmin ? `<button onclick="deleteUser('${doc.id}')" class="delete-btn">Delete User</button>` : ''}
+                    <button onclick="showAllUsers()" class="glow-button">Back to User List</button>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = userDetailsHTML;
+        } else {
+            showError('User not found');
+        }
+    }).catch((error) => {
+        console.error("Error fetching user details", error);
+        showError('Error fetching user details: ' + error.message);
+    });
+}
+
+function deleteUser(userId) {
+    console.log("Deleting user", userId);
+    if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+        db.collection('users').doc(userId).get().then((doc) => {
+            if (doc.exists && !doc.data().isAdmin) {
+                return db.collection('users').doc(userId).delete();
+            } else {
+                throw new Error("Cannot delete admin users");
+            }
+        }).then(() => {
+            showSuccess('User deleted successfully');
+            showAllUsers(); // Refresh the user list
+        }).catch((error) => {
+            console.error("Error deleting user", error);
+            showError('Error deleting user: ' + error.message);
+        });
+    }
 }
 
 function closeUsersTable() {
