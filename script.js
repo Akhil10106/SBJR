@@ -130,34 +130,51 @@ async function register() {
         return;
     }
     
-    if (password.length < 6) {
-        showError('Password must be at least 6 characters long.');
-        return;
-    }
-    
     try {
-        // Create user account
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
-
-        // Upload profile image if selected
-        let imageUrl = null;
+        
+        let profileImageUrl = null;
         if (imageFile) {
-            const storageRef = storage.ref(`profile_images/${user.uid}`);
+            const storageRef = storage.ref('profile-images/' + user.uid + '/' + imageFile.name);
             await storageRef.put(imageFile);
-            imageUrl = await storageRef.getDownloadURL();
+            profileImageUrl = await storageRef.getDownloadURL();
         }
-
-        // Save user data to Firestore
+        
         await db.collection('users').doc(user.uid).set({
             name: name,
             email: email,
+            profileImage: profileImageUrl,
             isAdmin: false,
-            profileImage: imageUrl
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-
-        console.log("User data saved to Firestore");
-        showSuccess('Registration successful. You are now logged in.');
+        
+        await user.updateProfile({
+            displayName: name,
+            photoURL: profileImageUrl
+        });
+        
+        // Add the user to the 'customers' collection
+        await db.collection('customers').doc(user.uid).set({
+            name: name,
+            email: email,
+            profileImage: profileImageUrl,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Initialize an empty cart for the new user
+        await db.collection('carts').doc(user.uid).set({
+            items: [],
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        showSuccess('Registration successful! Welcome to SBJR Agriculture Shop.');
+        
+        // Refresh the current user object
+        currentUser = auth.currentUser;
+        
+        // Check admin status and show home
+        checkAdminStatus(user.uid);
         showHome();
     } catch (error) {
         console.error("Registration error", error);
@@ -631,6 +648,7 @@ function showAdminPanel() {
             const content = `
                 <h2>Admin Panel</h2>
                 <button onclick="showAllUsers()" class="glow-button">Show All Users</button>
+                 <button onclick="migrateExistingUsers()" class="glow-button">Migrate Existing Users</button>
                 <div id="all-users-container"></div>
                 <div id="product-form-container">
                     <h3 id="form-title">Add New Product</h3>
@@ -739,10 +757,14 @@ function viewUserDetails(userId) {
             const userData = doc.data();
             console.log("User data:", userData); // For debugging
 
-            // Check if createdAt exists and is a valid timestamp
-            const joinedDate = userData.createdAt && userData.createdAt.toDate ? 
-                new Date(userData.createdAt.toDate()).toLocaleDateString() : 
-                'Not available';
+            let joinedDate = 'Not available';
+            if (userData.createdAt) {
+                if (userData.createdAt.toDate) {
+                    joinedDate = new Date(userData.createdAt.toDate()).toLocaleDateString();
+                } else if (userData.createdAt.seconds) {
+                    joinedDate = new Date(userData.createdAt.seconds * 1000).toLocaleDateString();
+                }
+            }
 
             const userDetailsHTML = `
                 <div class="user-details">
@@ -763,6 +785,27 @@ function viewUserDetails(userId) {
     }).catch((error) => {
         console.error("Error fetching user details", error);
         showError('Error fetching user details: ' + error.message);
+    });
+}
+
+function migrateExistingUsers() {
+    db.collection('users').get().then((snapshot) => {
+        const batch = db.batch();
+        snapshot.docs.forEach((doc) => {
+            const userData = doc.data();
+            if (!userData.createdAt) {
+                batch.update(doc.ref, {
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        });
+        return batch.commit();
+    }).then(() => {
+        console.log("Migration completed successfully");
+        showSuccess("User migration completed successfully");
+    }).catch((error) => {
+        console.error("Error during migration:", error);
+        showError("Error during user migration: " + error.message);
     });
 }
 
