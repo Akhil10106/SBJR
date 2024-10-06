@@ -552,6 +552,19 @@ nav {
     border-radius: 3px;
 }
 
+.delete-btn {
+    background-color: var(--error-color);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+}
 .cart-summary {
     margin-top: 20px;
     text-align: right;
@@ -761,6 +774,32 @@ nav {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+}
+.user-profile-picture-large {
+    width: 80px;  /* Reduced from 100px */
+    height: 80px; /* Reduced from 100px */
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+}
+
+.user-details {
+    background-color: var(--card-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    max-width: 400px; /* Reduced from 500px to make the overall container smaller */
+    margin: 0 auto;
+}
+
+.user-details img {
+    display: block;
+    margin: 0 auto 15px;
+}
+
+.user-details p {
+    margin: 10px 0;
+    word-break: break-word; /* This will prevent long emails from overflowing */
 }
 
 @media (max-width: 768px) {
