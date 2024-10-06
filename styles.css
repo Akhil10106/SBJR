@@ -233,6 +233,124 @@ nav {
     margin-right: 10px;
 }
 
+/* Seasons */
+
+#season-display {
+    text-align: left;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: var(--card-background);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+#season-display:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px var(--shadow-color);
+}
+
+#season-display h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.4em;
+    color: var(--primary-color);
+    animation: slideInLeft 0.5s ease-out;
+}
+
+#season-display ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: none;
+}
+
+#season-display li {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: calc(var(--item-index) * 0.1s);
+}
+
+#season-display li::before {
+    content: '🌱';
+    margin-right: 10px;
+    font-size: 1.2em;
+    animation: growShrink 2s infinite;
+}
+
+#season-display p {
+    margin: 15px 0 0;
+    font-size: 1em;
+    font-style: italic;
+    color: var(--text-color);
+    opacity: 0.8;
+    animation: fadeIn 1s ease-out 0.5s forwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 0.8; }
+}
+
+@keyframes growShrink {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+#season-display::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: rotate(0deg);
+        opacity: 0;
+    }
+    25% {
+        opacity: 0.5;
+    }
+    50% {
+        transform: rotate(180deg);
+        opacity: 0;
+    }
+    100% {
+        transform: rotate(360deg);
+        opacity: 0;
+    }
+}
+
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
