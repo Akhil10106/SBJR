@@ -22,20 +22,19 @@ let cart = [];
 
 
 function toggleAuthForm() {
-    const loginContainer = document.getElementById('login-container');
-    const registerForm = document.getElementById('register-form');
     const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
     const forgotPasswordForm = document.getElementById('forgot-password-form');
     const authToggle = document.getElementById('auth-toggle');
 
     if (loginForm.style.display !== 'none') {
         loginForm.style.display = 'none';
-        forgotPasswordForm.style.display = 'none';
         registerForm.style.display = 'block';
+        forgotPasswordForm.style.display = 'none';
         authToggle.innerHTML = 'Already have an account? <a href="#" onclick="toggleAuthForm()">Login here</a>';
     } else {
-        registerForm.style.display = 'none';
         loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
         forgotPasswordForm.style.display = 'none';
         authToggle.innerHTML = 'New user? <a href="#" onclick="toggleAuthForm()">Register here</a>';
     }
@@ -127,58 +126,44 @@ async function register() {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
-    const imageFile = document.getElementById('profile-image').files[0];
     
+    console.log("Name:", name, "Email:", email, "Password length:", password.length);
+
     if (!name || !email || !password) {
         showError('Please fill in all fields.');
         return;
     }
     
     try {
+        console.log("Creating user with email and password");
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
-        
-        let profileImageUrl = null;
-        if (imageFile) {
-            const storageRef = storage.ref('profile-images/' + user.uid + '/' + imageFile.name);
-            await storageRef.put(imageFile);
-            profileImageUrl = await storageRef.getDownloadURL();
-        }
-        
+        console.log("User created successfully", user);
+
+        console.log("Adding user to Firestore");
         await db.collection('users').doc(user.uid).set({
             name: name,
             email: email,
-            profileImage: profileImageUrl,
             isAdmin: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        
+        console.log("User added to Firestore");
+
+        console.log("Updating user profile");
         await user.updateProfile({
-            displayName: name,
-            photoURL: profileImageUrl
+            displayName: name
         });
-        
-        // Add the user to the 'customers' collection
-        await db.collection('customers').doc(user.uid).set({
-            name: name,
-            email: email,
-            profileImage: profileImageUrl,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Initialize an empty cart for the new user
-        await db.collection('carts').doc(user.uid).set({
-            items: [],
-            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
+        console.log("User profile updated");
+
         showSuccess('Registration successful! Welcome to SBJR Agriculture Shop.');
         
         // Refresh the current user object
         currentUser = auth.currentUser;
         
-        // Check admin status and show home
-        checkAdminStatus(user.uid);
+        console.log("Checking admin status");
+        await checkAdminStatus(user.uid);
+        
+        console.log("Showing home page");
         showHome();
     } catch (error) {
         console.error("Registration error", error);
@@ -570,87 +555,175 @@ function copyCouponCode(couponCode) {
 
 function showProfile() {
     console.log("Showing profile");
-    db.collection('users').doc(currentUser.uid).get().then(doc => {
+    const content = document.getElementById('content');
+    
+    if (!currentUser) {
+        showError('Please log in to view your profile.');
+        return;
+    }
+
+    const userRef = db.collection('users').doc(currentUser.uid);
+    userRef.get().then((doc) => {
         if (doc.exists) {
             const userData = doc.data();
-            let content = `
-                <h2>Profile</h2>
-                <div class="profile-info">
-                    <img src="${userData.profilePicture || 'default-profile-picture.jpg'}" alt="Profile Picture" class="profile-picture">
+            let profileHTML = `
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div class="profile-image-container">
+                            <img id="profile-image" src="${userData.photoURL || 'path/to/default/image.jpg'}" alt="Profile Image">
+                            <button onclick="editField('profileImage')" class="change-image-btn">
+                                <i class="fas fa-camera"></i> Change Image
+                            </button>
+                        </div>
+                        <div class="profile-name-email">
+                            <h2>${userData.name || 'Not set'}</h2>
+                            <p>${userData.email}</p>
+                        </div>
+                    </div>
                     <div class="profile-details">
-                        <p><strong>Name:</strong> ${userData.name}</p>
-                        <p><strong>Email:</strong> ${currentUser.email}</p>
+                        <div class="profile-field">
+                            <span class="field-label">Name</span>
+                            <span class="field-value">${userData.name || 'Not set'}</span>
+                            <button onclick="editField('name')" class="edit-btn">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                        <div class="profile-field">
+                            <span class="field-label">Email</span>
+                            <span class="field-value">${userData.email}</span>
+                        </div>
+                        <div class="profile-field">
+                            <span class="field-label">Password</span>
+                            <span class="field-value">••••••••</span>
+                            <button onclick="editField('password')" class="edit-btn">
+                                <i class="fas fa-key"></i> Change
+                            </button>
+                        </div>
+                    </div>
+                    <div class="profile-coupons">
+                        <h3>Your Coupons</h3>
+                        <div id="user-coupons">Loading coupons...</div>
                     </div>
                 </div>
-                <h3>Your Coupons</h3>
-                <div id="user-coupons"></div>
             `;
-            document.getElementById('content').innerHTML = content;
+
+            content.innerHTML = profileHTML;
             loadUserCoupons();
         } else {
-            showError('User profile not found');
+            showError('User data not found');
         }
-    }).catch(error => {
-        console.error("Error loading profile", error);
+    }).catch((error) => {
         showError('Error loading profile: ' + error.message);
     });
 }
-
 function loadUserCoupons() {
     db.collection('coupons')
         .where('userEmail', '==', currentUser.email)
-        .orderBy('createdAt', 'desc')
-        .get()
+        .get() // Remove orderBy for now
         .then(querySnapshot => {
             let couponsHtml = '<ul class="coupon-list">';
-            querySnapshot.forEach(doc => {
-                const coupon = doc.data();
-                let cartItemsHtml = coupon.cartItems.map(item => `
-                    <li>${item.name} - Quantity: ${item.quantity} - Price: ₹${(item.price * item.quantity).toFixed(2)}</li>
-                `).join('');
-
-                couponsHtml += `
-                    <li>
-                        <span class="coupon-code">${coupon.code}</span>
-                        <span class="coupon-amount">₹${coupon.amount.toFixed(2)}</span>
-                        <span class="coupon-status">${coupon.used ? 'Used' : 'Available'}</span>
-                        <div class="coupon-items">
-                            <strong>Items:</strong>
-                            <ul>${cartItemsHtml}</ul>
-                        </div>
-                    </li>
-                `;
-            });
-            couponsHtml += '</ul>';
+            if (querySnapshot.empty) {
+                couponsHtml = '<p>No coupons found.</p>';
+            } else {
+                querySnapshot.forEach(doc => {
+                    const coupon = doc.data();
+                    couponsHtml += `
+                        <li>
+                            <span class="coupon-code">${coupon.code}</span>
+                            <span class="coupon-amount">₹${coupon.amount.toFixed(2)}</span>
+                            <span class="coupon-status">${coupon.used ? 'Used' : 'Available'}</span>
+                        </li>
+                    `;
+                });
+                couponsHtml += '</ul>';
+            }
             document.getElementById('user-coupons').innerHTML = couponsHtml;
         })
         .catch(error => {
             console.error("Error loading coupons", error);
-            showError('Error loading coupons: ' + error.message);
+            document.getElementById('user-coupons').innerHTML = 'Error loading coupons. Please try again later.';
         });
 }
-function editField(field) {
-    let currentValue = '';
-    let inputType = 'text';
 
-    if (field === 'name') {
-        currentValue = document.getElementById('profile-name').textContent;
-    } else if (field === 'password') {
-        inputType = 'password';
-    } else if (field === 'profileImage') {
-        // Handle profile image change
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = (e) => updateProfileImage(e.target.files[0]);
-        input.click();
+function editField(field) {
+    switch(field) {
+        case 'name':
+            const newName = prompt("Enter your new name:", currentUser.displayName);
+            if (newName) updateProfile({displayName: newName, name: newName});
+            break;
+            case 'password':
+                showReauthenticationForm();
+                break;
+        case 'profileImage':
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => updateProfileImage(e.target.files[0]);
+            input.click();
+            break;
+    }
+}
+
+function showReauthenticationForm() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <div class="reauthentication-form">
+            <h3>Please re-enter your password to continue</h3>
+            <input type="password" id="reauthentication-password" placeholder="Current Password">
+            <button onclick="reauthenticateUser()">Confirm</button>
+        </div>
+    `;
+}
+
+function reauthenticateUser() {
+    const password = document.getElementById('reauthentication-password').value;
+    const credential = firebase.auth.EmailAuthProvider.credential(
+        currentUser.email,
+        password
+    );
+
+    currentUser.reauthenticateWithCredential(credential)
+        .then(() => {
+            showPasswordChangeForm();
+        })
+        .catch((error) => {
+            showError('Re-authentication failed: ' + error.message);
+        });
+}
+
+function showPasswordChangeForm() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <div class="password-change-form">
+            <h3>Enter your new password</h3>
+            <input type="password" id="new-password" placeholder="New Password">
+            <input type="password" id="confirm-new-password" placeholder="Confirm New Password">
+            <button onclick="changePassword()">Change Password</button>
+        </div>
+    `;
+}
+
+function changePassword() {
+    const newPassword = document.getElementById('new-password').value;
+    const confirmNewPassword = document.getElementById('confirm-new-password').value;
+
+    if (newPassword !== confirmNewPassword) {
+        showError('Passwords do not match');
         return;
     }
 
-    const newValue = prompt(`Enter new ${field}:`, currentValue);
-    if (newValue !== null && newValue !== '') {
-        updateProfile(field, newValue);
-    }
+    updatePassword(newPassword);
+}
+
+function updatePassword(newPassword) {
+    currentUser.updatePassword(newPassword)
+        .then(() => {
+            showSuccess('Password updated successfully');
+            showProfile(); // Refresh the profile view
+        })
+        .catch(error => {
+            showError('Error updating password: ' + error.message);
+        });
 }
 
 function updateField(e, field) {
@@ -669,45 +742,53 @@ function updateField(e, field) {
     }
 }
 
-function updateProfile(field, newValue) {
-    db.collection('users').doc(currentUser.uid).update({
-        [field]: newValue
-    }).then(() => {
-        showSuccess(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`);
-        showProfile();
-    }).catch(error => {
-        console.error(`Error updating ${field}`, error);
-        showError(`Error updating ${field}: ${error.message}`);
-    });
+function updateProfile(updates) {
+    const userRef = db.collection('users').doc(currentUser.uid);
+
+    // Update Firebase Auth profile
+    currentUser.updateProfile(updates)
+        .then(() => {
+            // Update Firestore database
+            return userRef.update(updates);
+        })
+        .then(() => {
+            showSuccess('Profile updated successfully');
+            showProfile(); // Refresh the profile view
+        })
+        .catch(error => {
+            showError('Error updating profile: ' + error.message);
+        });
 }
 
 function updateProfileImage(file) {
-    if (file) {
-        const storageRef = storage.ref(`profile_images/${currentUser.uid}`);
-        storageRef.put(file).then(() => {
-            return storageRef.getDownloadURL();
-        }).then((url) => {
-            return db.collection('users').doc(currentUser.uid).update({
-                profileImage: url
-            });
-        }).then(() => {
-            showSuccess('Profile image updated successfully');
-            showProfile(); // Refresh the profile view
-        }).catch((error) => {
-            console.error("Error updating profile image", error);
-            showError('Error updating profile image: ' + error.message);
+    const storageRef = storage.ref('profile-images/' + currentUser.uid + '/' + file.name);
+    const userRef = db.collection('users').doc(currentUser.uid);
+
+    storageRef.put(file).then(() => {
+        return storageRef.getDownloadURL();
+    }).then(url => {
+        const updates = { photoURL: url };
+        // Update Firebase Auth profile
+        return currentUser.updateProfile(updates).then(() => {
+            // Update Firestore database
+            return userRef.update(updates);
         });
-    }
+    }).then(() => {
+        showSuccess('Profile image updated successfully');
+        showProfile(); // Refresh the profile view
+    }).catch(error => {
+        showError('Error updating profile image: ' + error.message);
+    });
 }
 
 function updatePassword(newPassword) {
-    currentUser.updatePassword(newPassword).then(() => {
-        showSuccess('Password updated successfully');
-        showProfile();
-    }).catch(error => {
-        console.error('Error updating password', error);
-        showError(`Error updating password: ${error.message}`);
-    });
+    currentUser.updatePassword(newPassword)
+        .then(() => {
+            showSuccess('Password updated successfully');
+        })
+        .catch(error => {
+            showError('Error updating password: ' + error.message);
+        });
 }
 
 function cancelEdit() {
@@ -1202,3 +1283,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add this line to set up the image preview
     document.getElementById('profile-image').addEventListener('change', handleImagePreview);
 });
+
