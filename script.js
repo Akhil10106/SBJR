@@ -236,78 +236,80 @@ function logout() {
 
 function showHome() {
     console.log("Showing home page");
-    const content = document.getElementById('content');
-    content.innerHTML = '<h2>Loading home page...</h2>';
-
     if (!currentUser) {
-        console.error("No user is currently logged in");
+        console.error("No user logged in");
         showError('Please log in to view the home page.');
         return;
     }
+    db.collection('users').doc(currentUser.uid).get().then(doc => {
+        const userData = doc.data();
+        console.log("User data", userData);
 
-    db.collection('users').doc(currentUser.uid).get()
-        .then(doc => {
-            let userData = doc.data();
-            console.log("User data retrieved:", userData);
+        // Fetch featured products
+        db.collection('products').limit(3).get().then(querySnapshot => {
+            let featuredProducts = '';
+            querySnapshot.forEach(doc => {
+                const product = doc.data();
+                featuredProducts += `
+                    <div class="featured-product">
+                        <img src="${product.image}" alt="${product.name}" class="featured-product-image">
+                        <h3>${product.name}</h3>
+                        <p>₹${product.price}</p>
+                        <button onclick="showProductDetails('${doc.id}')" class="glow-button">View Details</button>
+                    </div>
+                `;
+            });
 
-            if (!userData) {
-                console.warn("User document is empty. Creating default user data.");
-                userData = {
-                    name: currentUser.displayName || "Valued Customer",
-                    email: currentUser.email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                return db.collection('users').doc(currentUser.uid).set(userData)
-                    .then(() => userData);
-            }
-            return userData;
-        })
-        .then(userData => {
-            const homeContent = `
+            const content = `
                 <div class="home-content">
                     <div class="welcome-section">
                         <h2>Welcome to SBJR Agriculture Shop, ${userData.name}!</h2>
                         <p>Discover the best agricultural products for your needs.</p>
+                        <div class="scroll-indicator">
+                            <p>Scroll to explore and find our location</p>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
                     
-                    <div id="featured-products">
-                        <h3>Featured Products</h3>
-                        <p>Loading featured products...</p>
+                    <div class="featured-products">
+                        <h2>Featured Products</h2>
+                        <div class="featured-products-grid">
+                            ${featuredProducts}
+                        </div>
                     </div>
                     
                     <div class="about-section">
-                        <h3>About SBJR Agriculture Shop</h3>
-                        <p>We are dedicated to providing high-quality agricultural products and services to support farmers and gardeners alike.</p>
+                        <h2>About SBJR Agriculture Shop</h2>
+                        <p>SBJR Agriculture Shop is your one-stop destination for high-quality agricultural products. We offer a wide range of seeds, fertilizers, tools, and equipment to meet all your farming needs.</p>
+                        <p>Our mission is to support farmers and agricultural enthusiasts by providing top-notch products and expert advice.</p>
                     </div>
                     
-                    <div class="seasonal-tips">
-                        <h3>Seasonal Agricultural Tips</h3>
-                        <p>Stay tuned for seasonal tips and advice to maximize your yield!</p>
+                    <div class="map-section">
+                        <div class="map-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h2>Find Us</h2>
+                            <p>Visit our store to see our wide range of products in person. Our knowledgeable staff is ready to assist you!</p>
+                        </div>
+                        <div id="map">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d430.8667206686061!2d77.36312548457309!3d30.238965252814257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390efd81c34d8d29%3A0x7591a09260058b56!2sAgriculture%20store!5e0!3m2!1sen!2sin!4v1728130861333!5m2!1sen!2sin" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
                     </div>
                     
                     <div class="cta-section">
-                        <h3>Explore Our Products</h3>
-                        <button onclick="showShop()" class="glow-button">Visit Shop</button>
+                        <h2>Start Shopping Now!</h2>
+                        <button onclick="showShop()" class="glow-button">Explore Our Products</button>
                     </div>
                 </div>
             `;
-            content.innerHTML = homeContent;
-            
-            // Load featured products after the content is added to the DOM
-            loadFeaturedProducts();
-
-            // Update the season display
-            updateSeasonDisplay();
-        })
-        .catch(error => {
-            console.error("Error in showHome:", error);
-            showError('Error loading home page: ' + error.message);
-            content.innerHTML = `
-                <h2>Error Loading Home Page</h2>
-                <p>We're sorry, but we encountered an error while loading the home page. Please try again later.</p>
-                <button onclick="showHome()" class="glow-button">Retry</button>
-            `;
+            document.getElementById('content').innerHTML = content;
+        }).catch(error => {
+            console.error("Error fetching featured products", error);
+            showError('Error loading featured products: ' + error.message);
         });
+    }).catch(error => {
+        console.error("Error fetching user data", error);
+        showError('Error loading home page: ' + error.message);
+    });
 }
 
 function showShop() {
