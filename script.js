@@ -92,6 +92,8 @@ function login() {
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
     
+    console.log("Attempting login with email:", email);
+    
     if (!email || !password) {
         showError('Please enter both email and password.');
         return;
@@ -101,19 +103,22 @@ function login() {
         .then((userCredential) => {
             console.log("Login successful", userCredential.user);
             showSuccess(`Welcome back, ${userCredential.user.email}!`);
+            currentUser = userCredential.user;
             showHome();
         })
         .catch((error) => {
             console.error("Login error", error);
             switch (error.code) {
+                case 'auth/invalid-login-credentials':
                 case 'auth/user-not-found':
-                    showError('No user found with this email. Please check your email or register.');
-                    break;
                 case 'auth/wrong-password':
-                    showError('Incorrect password. Please try again.');
+                    showError('Invalid email or password. Please try again.');
                     break;
                 case 'auth/invalid-email':
                     showError('Invalid email format. Please enter a valid email.');
+                    break;
+                case 'auth/too-many-requests':
+                    showError('Too many failed login attempts. Please try again later or reset your password.');
                     break;
                 default:
                     showError('Login failed: ' + error.message);
@@ -121,55 +126,86 @@ function login() {
         });
 }
 
-async function register() {
-    console.log("Register function called");
-    const name = document.getElementById('register-name').value.trim();
-    const email = document.getElementById('register-email').value.trim();
-    const password = document.getElementById('register-password').value;
-    
-    console.log("Name:", name, "Email:", email, "Password length:", password.length);
-
-    if (!name || !email || !password) {
-        showError('Please fill in all fields.');
-        return;
-    }
-    
-    try {
-        console.log("Creating user with email and password");
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-        console.log("User created successfully", user);
-
-        console.log("Adding user to Firestore");
-        await db.collection('users').doc(user.uid).set({
-            name: name,
-            email: email,
-            isAdmin: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+function checkUserExists(email) {
+    return auth.fetchSignInMethodsForEmail(email)
+        .then((signInMethods) => {
+            return signInMethods.length > 0;
+        })
+        .catch((error) => {
+            console.error("Error checking user existence:", error);
+            return false;
         });
-        console.log("User added to Firestore");
+}
 
-        console.log("Updating user profile");
-        await user.updateProfile({
-            displayName: name
-        });
-        console.log("User profile updated");
-
-        showSuccess('Registration successful! Welcome to SBJR Agriculture Shop.');
-        
-        // Refresh the current user object
-        currentUser = auth.currentUser;
-        
-        console.log("Checking admin status");
-        await checkAdminStatus(user.uid);
-        
-        console.log("Showing home page");
-        showHome();
-    } catch (error) {
-        console.error("Registration error", error);
-        showError('Registration failed: ' + error.message);
+// Add this function to handle image preview
+function handleRegisterImagePreview(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('register-image-preview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Profile Image Preview">`;
+        }
+        reader.readAsDataURL(file);
+    } else {
+        preview.innerHTML = '';
     }
 }
+
+// Modify the register function to include image upload
+function register() {
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const imageFile = document.getElementById('register-image').files[0];
+
+    if (!name || !email || !password) {
+        showError('Please fill in all fields');
+        return;
+    }
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log("User registered:", user);
+
+            // Create a user document in Firestore
+            return db.collection('users').doc(user.uid).set({
+                name: name,
+                email: email,
+                isAdmin: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                console.log("User document created in Firestore");
+                return user;
+            });
+        })
+        .then((user) => {
+            if (imageFile) {
+                return uploadProfileImage(user, imageFile);
+            } else {
+                return user;
+            }
+        })
+        .then((user) => {
+            showSuccess('Registration successful! Welcome to SBJR Agriculture Shop.');
+            currentUser = user;
+            showHome();
+        })
+        .catch((error) => {
+            console.error("Registration error", error);
+            showError('Registration failed: ' + error.message);
+        });
+}
+
+// Add this to your DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing code ...
+    
+    // Add event listener for register image preview
+    document.getElementById('register-image').addEventListener('change', handleRegisterImagePreview);
+});
 
 function handleImagePreview(event) {
     const file = event.target.files[0];
@@ -200,80 +236,78 @@ function logout() {
 
 function showHome() {
     console.log("Showing home page");
+    const content = document.getElementById('content');
+    content.innerHTML = '<h2>Loading home page...</h2>';
+
     if (!currentUser) {
-        console.error("No user logged in");
+        console.error("No user is currently logged in");
         showError('Please log in to view the home page.');
         return;
     }
-    db.collection('users').doc(currentUser.uid).get().then(doc => {
-        const userData = doc.data();
-        console.log("User data", userData);
 
-        // Fetch featured products
-        db.collection('products').limit(3).get().then(querySnapshot => {
-            let featuredProducts = '';
-            querySnapshot.forEach(doc => {
-                const product = doc.data();
-                featuredProducts += `
-                    <div class="featured-product">
-                        <img src="${product.image}" alt="${product.name}" class="featured-product-image">
-                        <h3>${product.name}</h3>
-                        <p>₹${product.price}</p>
-                        <button onclick="showProductDetails('${doc.id}')" class="glow-button">View Details</button>
-                    </div>
-                `;
-            });
+    db.collection('users').doc(currentUser.uid).get()
+        .then(doc => {
+            let userData = doc.data();
+            console.log("User data retrieved:", userData);
 
-            const content = `
+            if (!userData) {
+                console.warn("User document is empty. Creating default user data.");
+                userData = {
+                    name: currentUser.displayName || "Valued Customer",
+                    email: currentUser.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                return db.collection('users').doc(currentUser.uid).set(userData)
+                    .then(() => userData);
+            }
+            return userData;
+        })
+        .then(userData => {
+            const homeContent = `
                 <div class="home-content">
                     <div class="welcome-section">
                         <h2>Welcome to SBJR Agriculture Shop, ${userData.name}!</h2>
                         <p>Discover the best agricultural products for your needs.</p>
-                        <div class="scroll-indicator">
-                            <p>Scroll to explore and find our location</p>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
                     </div>
                     
-                    <div class="featured-products">
-                        <h2>Featured Products</h2>
-                        <div class="featured-products-grid">
-                            ${featuredProducts}
-                        </div>
+                    <div id="featured-products">
+                        <h3>Featured Products</h3>
+                        <p>Loading featured products...</p>
                     </div>
                     
                     <div class="about-section">
-                        <h2>About SBJR Agriculture Shop</h2>
-                        <p>SBJR Agriculture Shop is your one-stop destination for high-quality agricultural products. We offer a wide range of seeds, fertilizers, tools, and equipment to meet all your farming needs.</p>
-                        <p>Our mission is to support farmers and agricultural enthusiasts by providing top-notch products and expert advice.</p>
+                        <h3>About SBJR Agriculture Shop</h3>
+                        <p>We are dedicated to providing high-quality agricultural products and services to support farmers and gardeners alike.</p>
                     </div>
                     
-                    <div class="map-section">
-                        <div class="map-info">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <h2>Find Us</h2>
-                            <p>Visit our store to see our wide range of products in person. Our knowledgeable staff is ready to assist you!</p>
-                        </div>
-                        <div id="map">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d430.8667206686061!2d77.36312548457309!3d30.238965252814257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390efd81c34d8d29%3A0x7591a09260058b56!2sAgriculture%20store!5e0!3m2!1sen!2sin!4v1728130861333!5m2!1sen!2sin" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                        </div>
+                    <div class="seasonal-tips">
+                        <h3>Seasonal Agricultural Tips</h3>
+                        <p>Stay tuned for seasonal tips and advice to maximize your yield!</p>
                     </div>
                     
                     <div class="cta-section">
-                        <h2>Start Shopping Now!</h2>
-                        <button onclick="showShop()" class="glow-button">Explore Our Products</button>
+                        <h3>Explore Our Products</h3>
+                        <button onclick="showShop()" class="glow-button">Visit Shop</button>
                     </div>
                 </div>
             `;
-            document.getElementById('content').innerHTML = content;
-        }).catch(error => {
-            console.error("Error fetching featured products", error);
-            showError('Error loading featured products: ' + error.message);
+            content.innerHTML = homeContent;
+            
+            // Load featured products after the content is added to the DOM
+            loadFeaturedProducts();
+
+            // Update the season display
+            updateSeasonDisplay();
+        })
+        .catch(error => {
+            console.error("Error in showHome:", error);
+            showError('Error loading home page: ' + error.message);
+            content.innerHTML = `
+                <h2>Error Loading Home Page</h2>
+                <p>We're sorry, but we encountered an error while loading the home page. Please try again later.</p>
+                <button onclick="showHome()" class="glow-button">Retry</button>
+            `;
         });
-    }).catch(error => {
-        console.error("Error fetching user data", error);
-        showError('Error loading home page: ' + error.message);
-    });
 }
 
 function showShop() {
@@ -556,65 +590,85 @@ function copyCouponCode(couponCode) {
 function showProfile() {
     console.log("Showing profile");
     const content = document.getElementById('content');
-    
+    content.innerHTML = '<h2>Loading profile...</h2>';
+
     if (!currentUser) {
+        console.error("No user is currently logged in");
         showError('Please log in to view your profile.');
         return;
     }
 
-    const userRef = db.collection('users').doc(currentUser.uid);
-    userRef.get().then((doc) => {
-        if (doc.exists) {
-            const userData = doc.data();
-            let profileHTML = `
-                <div class="profile-container">
-                    <div class="profile-header">
-                        <div class="profile-image-container">
-                            <img id="profile-image" src="${userData.photoURL || 'path/to/default/image.jpg'}" alt="Profile Image">
-                            <button onclick="editField('profileImage')" class="change-image-btn">
-                                <i class="fas fa-camera"></i> Change Image
-                            </button>
-                        </div>
-                        <div class="profile-name-email">
-                            <h2>${userData.name || 'Not set'}</h2>
-                            <p>${userData.email}</p>
-                        </div>
-                    </div>
-                    <div class="profile-details">
-                        <div class="profile-field">
-                            <span class="field-label">Name</span>
-                            <span class="field-value">${userData.name || 'Not set'}</span>
-                            <button onclick="editField('name')" class="edit-btn">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                        </div>
-                        <div class="profile-field">
-                            <span class="field-label">Email</span>
-                            <span class="field-value">${userData.email}</span>
-                        </div>
-                        <div class="profile-field">
-                            <span class="field-label">Password</span>
-                            <span class="field-value">••••••••</span>
-                            <button onclick="editField('password')" class="edit-btn">
-                                <i class="fas fa-key"></i> Change
-                            </button>
-                        </div>
-                    </div>
-                    <div class="profile-coupons">
-                        <h3>Your Coupons</h3>
-                        <div id="user-coupons">Loading coupons...</div>
-                    </div>
-                </div>
-            `;
+    console.log("Current user UID:", currentUser.uid);
 
-            content.innerHTML = profileHTML;
-            loadUserCoupons();
-        } else {
-            showError('User data not found');
-        }
-    }).catch((error) => {
-        showError('Error loading profile: ' + error.message);
-    });
+    db.collection('users').doc(currentUser.uid).get()
+        .then(doc => {
+            console.log("Firestore document retrieved:", doc);
+            if (doc.exists) {
+                const userData = doc.data();
+                console.log("User data retrieved:", userData);
+
+                // Check if userData has the necessary fields
+                if (!userData.name || !userData.email) {
+                    console.warn("User data is incomplete", userData);
+                    throw new Error("Incomplete user data");
+                }
+
+                const profileHTML = `
+                    <div class="profile-container">
+                        <div class="profile-header">
+                            <div class="profile-image-container">
+                                <img id="profile-image" src="${userData.photoURL || 'https://via.placeholder.com/150'}" alt="Profile Picture">
+                                <button onclick="changeProfileImage()" class="change-image-btn">Change Image</button>
+                            </div>
+                            <div class="profile-name-email">
+                                <h2>${userData.name}</h2>
+                                <p>${userData.email}</p>
+                            </div>
+                        </div>
+                        <div class="profile-details">
+                            <div class="profile-field">
+                                <span class="field-label">Name:</span>
+                                <span class="field-value">${userData.name}</span>
+                                <button onclick="editProfile('name')" class="edit-btn">Edit</button>
+                            </div>
+                            <div class="profile-field">
+                                <span class="field-label">Email:</span>
+                                <span class="field-value">${userData.email}</span>
+                            </div>
+                            <div class="profile-field">
+                                <span class="field-label">Password:</span>
+                                <span class="field-value">********</span>
+                                <button onclick="editProfile('password')" class="edit-btn">Change</button>
+                            </div>
+                        </div>
+                        <div class="profile-coupons">
+                            <h3>Your Coupons</h3>
+                            <div id="user-coupons">Loading coupons...</div>
+                        </div>
+                    </div>
+                `;
+                content.innerHTML = profileHTML;
+                loadUserCoupons();
+            } else {
+                console.error("No user document found for ID:", currentUser.uid);
+                throw new Error("User document not found");
+            }
+        })
+        .catch(error => {
+            console.error("Error loading profile:", error);
+            showError('Error loading profile: ' + error.message);
+            content.innerHTML = `
+                <h2>Error Loading Profile</h2>
+                <p>We're sorry, but we couldn't load your profile information. This might be because:</p>
+                <ul>
+                    <li>Your account was not properly set up</li>
+                    <li>There was a problem connecting to our database</li>
+                    <li>Your session has expired</li>
+                </ul>
+                <p>Please try logging out and logging back in. If the problem persists, please contact our support team.</p>
+                <button onclick="logout()" class="glow-button">Logout</button>
+            `;
+        });
 }
 function loadUserCoupons() {
     db.collection('coupons')
@@ -972,12 +1026,28 @@ function deleteUser(userId) {
     if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
         db.collection('users').doc(userId).get().then((doc) => {
             if (doc.exists && !doc.data().isAdmin) {
-                return db.collection('users').doc(userId).delete();
+                // Mark user for deletion
+                return db.collection('users').doc(userId).update({
+                    markedForDeletion: true,
+                    markedForDeletionAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
             } else {
                 throw new Error("Cannot delete admin users");
             }
         }).then(() => {
-            showSuccess('User deleted successfully');
+            // Delete user's cart
+            return db.collection('carts').doc(userId).delete();
+        }).then(() => {
+            // Delete user's orders
+            return db.collection('orders').where('userId', '==', userId).get();
+        }).then((orderSnapshot) => {
+            const batch = db.batch();
+            orderSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+            return batch.commit();
+        }).then(() => {
+            showSuccess('User marked for deletion and data removed from the system');
             showAllUsers(); // Refresh the user list
         }).catch((error) => {
             console.error("Error deleting user", error);
@@ -1269,14 +1339,62 @@ function resetPassword() {
         });
 }
 
+function loadFeaturedProducts() {
+    console.log("Loading featured products");
+    const featuredProductsElement = document.getElementById('featured-products');
+    if (!featuredProductsElement) {
+        console.warn("Featured products element not found in the DOM");
+        return;
+    }
+
+    db.collection('products').limit(3).get()
+        .then((querySnapshot) => {
+            let featuredProductsHTML = '<h3>Featured Products</h3>';
+            if (querySnapshot.empty) {
+                console.log("No featured products found");
+                featuredProductsHTML += '<p>No featured products available at the moment.</p>';
+            } else {
+                featuredProductsHTML += '<div class="product-grid">';
+                querySnapshot.forEach((doc) => {
+                    const product = doc.data();
+                    featuredProductsHTML += `
+                        <div class="product-card">
+                            <img src="${product.image}" alt="${product.name}" onclick="showProductDetails('${doc.id}')">
+                            <h4>${product.name}</h4>
+                            <p>₹${product.price}</p>
+                            <button onclick="addToCart('${doc.id}')" class="add-to-cart-btn">Add to Cart</button>
+                        </div>
+                    `;
+                });
+                featuredProductsHTML += '</div>';
+            }
+            featuredProductsElement.innerHTML = featuredProductsHTML;
+        })
+        .catch((error) => {
+            console.error("Error loading featured products:", error);
+            featuredProductsElement.innerHTML = '<p>Error loading featured products. Please try again later.</p>';
+        });
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM content loaded");
     updateCartCount();
-    initializeTheme(); // Initialize theme when the page loads
+    initializeTheme();
     updateSeasonDisplay();
     
-    // Add this line to set up the image preview
-    document.getElementById('profile-image').addEventListener('change', handleImagePreview);
+    const featuredProductsElement = document.getElementById('featured-products');
+    if (featuredProductsElement) {
+        loadFeaturedProducts();
+    } else {
+        console.warn("Featured products element not found in the DOM");
+    }
+    
+    // Make sure this element exists in your HTML
+    const profileImageElement = document.getElementById('profile-image');
+    if (profileImageElement) {
+        profileImageElement.addEventListener('change', handleImagePreview);
+    } else {
+        console.warn("Profile image element not found in the DOM");
+    }
 });
-
