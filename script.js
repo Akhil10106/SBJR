@@ -498,6 +498,10 @@ function showProfile() {
         const content = `
             <div class="profile-container glass-panel">
                 <h2>User Profile</h2>
+                <div class="profile-image-container">
+                    <img src="${userData.profileImage || 'path/to/default/image.jpg'}" alt="Profile Picture" class="profile-image">
+                    <button onclick="editField('profileImage')" class="edit-btn">Change Picture</button>
+                </div>
                 <div class="profile-info">
                     <div class="profile-field">
                         <label>Name:</label>
@@ -528,24 +532,27 @@ function showProfile() {
 }
 
 function editField(field) {
-    const profileContainer = document.querySelector('.profile-container');
-    let currentValue = field === 'name' ? document.getElementById('profile-name').textContent : '';
-    
-    const formHtml = `
-        <form id="edit-${field}-form" class="edit-form">
-            <input type="${field === 'password' ? 'password' : 'text'}" id="new-${field}" 
-                value="${field === 'password' ? '' : currentValue}" 
-                placeholder="${field === 'password' ? 'New Password' : `New ${field.charAt(0).toUpperCase() + field.slice(1)}`}" required>
-            ${field === 'password' ? `
-                <input type="password" id="confirm-password" placeholder="Confirm New Password" required>
-            ` : ''}
-            <button type="submit" class="glow-button">Save</button>
-            <button type="button" onclick="cancelEdit()" class="glow-button cancel-btn">Cancel</button>
-        </form>
-    `;
-    
-    profileContainer.insertAdjacentHTML('beforeend', formHtml);
-    document.getElementById(`edit-${field}-form`).addEventListener('submit', (e) => updateField(e, field));
+    let currentValue = '';
+    let inputType = 'text';
+
+    if (field === 'name') {
+        currentValue = document.getElementById('profile-name').textContent;
+    } else if (field === 'password') {
+        inputType = 'password';
+    } else if (field === 'profileImage') {
+        // Handle profile image change
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => updateProfileImage(e.target.files[0]);
+        input.click();
+        return;
+    }
+
+    const newValue = prompt(`Enter new ${field}:`, currentValue);
+    if (newValue !== null && newValue !== '') {
+        updateProfile(field, newValue);
+    }
 }
 
 function updateField(e, field) {
@@ -574,6 +581,25 @@ function updateProfile(field, newValue) {
         console.error(`Error updating ${field}`, error);
         showError(`Error updating ${field}: ${error.message}`);
     });
+}
+
+function updateProfileImage(file) {
+    if (file) {
+        const storageRef = storage.ref(`profile_images/${currentUser.uid}`);
+        storageRef.put(file).then(() => {
+            return storageRef.getDownloadURL();
+        }).then((url) => {
+            return db.collection('users').doc(currentUser.uid).update({
+                profileImage: url
+            });
+        }).then(() => {
+            showSuccess('Profile image updated successfully');
+            showProfile(); // Refresh the profile view
+        }).catch((error) => {
+            console.error("Error updating profile image", error);
+            showError('Error updating profile image: ' + error.message);
+        });
+    }
 }
 
 function updatePassword(newPassword) {
