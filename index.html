@@ -19,17 +19,12 @@
                     <input type="text" id="login-email" placeholder="Email">
                     <input type="password" id="login-password" placeholder="Password">
                     <button onclick="login()" class="glow-button">Login</button>
+                    <a href="#" onclick="showForgotPasswordForm()" class="forgot-password-link">Forgot Password?</a>
                 </div>
-                <div id="register-form" style="display: none;">
-                    <input type="text" id="register-name" placeholder="Full Name">
-                    <input type="text" id="register-email" placeholder="Email">
-                    <input type="password" id="register-password" placeholder="Password">
-                    <div class="image-upload-container">
-                        <label for="profile-image">Profile Image:</label>
-                        <input type="file" id="profile-image" accept="image/*">
-                        <div id="image-preview"></div>
-                    </div>
-                    <button onclick="register()" class="glow-button">Register</button>
+                <div id="forgot-password-form" style="display: none;">
+                    <input type="email" id="reset-email" placeholder="Enter your email">
+                    <button onclick="resetPassword()" class="glow-button">Send Reset Link</button>
+                    <button onclick="showLoginForm()" class="back-to-login">Back to Login</button>
                 </div>
                 <p id="auth-toggle">New user? <a href="#" onclick="toggleAuthForm()">Register here</a></p>
             </div>
