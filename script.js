@@ -725,22 +725,25 @@ function loadUserCoupons() {
 }
 
 function editField(field) {
-    switch(field) {
-        case 'name':
-            const newName = prompt("Enter your new name:", currentUser.displayName);
-            if (newName) updateProfile({displayName: newName, name: newName});
-            break;
-            case 'password':
-                showReauthenticationForm();
-                break;
-        case 'profileImage':
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e) => updateProfileImage(e.target.files[0]);
-            input.click();
-            break;
-    }
+    const fieldValue = document.getElementById(`${field}-value`);
+    const currentValue = fieldValue.textContent;
+    
+    const form = document.createElement('form');
+    form.className = 'edit-form';
+    form.innerHTML = `
+        <input type="${field === 'password' ? 'password' : 'text'}" id="edit-${field}" value="${field === 'password' ? '' : currentValue}" ${field === 'password' ? 'placeholder="New Password"' : ''}>
+        <button type="submit">Save</button>
+        <button type="button" onclick="cancelEdit()">Cancel</button>
+    `;
+    
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        const newValue = document.getElementById(`edit-${field}`).value;
+        updateProfile({ [field]: newValue });
+    };
+    
+    fieldValue.parentNode.insertBefore(form, fieldValue.nextSibling);
+    fieldValue.style.display = 'none';
 }
 
 function showReauthenticationForm() {
@@ -870,9 +873,11 @@ function updatePassword(newPassword) {
 }
 
 function cancelEdit() {
-    const editForm = document.querySelector('.edit-form');
-    if (editForm) {
-        editForm.remove();
+    const form = document.querySelector('.edit-form');
+    if (form) {
+        const field = form.querySelector('input').id.split('-')[1];
+        document.getElementById(`${field}-value`).style.display = '';
+        form.remove();
     }
 }
 
@@ -1344,39 +1349,32 @@ function updateSeasonDisplay() {
     const now = new Date();
     const month = now.getMonth();
 
-    let currentSeasons = [];
+    let currentSeason = '';
 
     // Define seasons based on typical Indian crop cycles
     if (month >= 5 && month <= 8) {  // June to September
-        currentSeasons.push('Kharif (Monsoon Crop) Season');
-        currentSeasons.push('Rice Sowing Season');
-        currentSeasons.push('Cotton Sowing Season');
-    }
-    if (month >= 9 && month <= 11) {  // October to December
-        currentSeasons.push('Rabi Crop Sowing Season');
-        currentSeasons.push('Wheat Sowing Season');
-    }
-    if (month >= 0 && month <= 2) {  // January to March
-        currentSeasons.push('Rabi Crop Growing Season');
-        currentSeasons.push('Wheat Growing Season');
-    }
-    if (month >= 2 && month <= 4) {  // March to May
-        currentSeasons.push('Rabi Crop Harvesting Season');
-        currentSeasons.push('Zaid Crop Season');
-    }
-    if (month === 4 || month === 5) {  // May to June
-        currentSeasons.push('Kharif Crop Preparation Season');
+        currentSeason = 'Kharif (Monsoon Crop) Season';
+    } else if (month >= 9 && month <= 11) {  // October to December
+        currentSeason = 'Rabi Crop Sowing Season';
+    } else if (month >= 0 && month <= 2) {  // January to March
+        currentSeason = 'Rabi Crop Growing Season';
+    } else if (month >= 2 && month <= 4) {  // March to May
+        currentSeason = 'Rabi Crop Harvesting Season';
+    } else if (month === 4 || month === 5) {  // May to June
+        currentSeason = 'Kharif Crop Preparation Season';
     }
 
-    // Display the seasons
-    let seasonsHTML = '<h3>Current Agricultural Seasons:</h3><ul>';
-    currentSeasons.forEach(season => {
-        seasonsHTML += `<li>${season}</li>`;
-    });
-    seasonsHTML += '</ul>';
-    seasonsHTML += '<p>Find products suitable for these seasons!</p>';
+    // Display the season with scrolling text
+    let seasonHTML = `
+        <h3>Current Agricultural Season:</h3>
+        <div class="scrolling-text-container">
+            <div class="scrolling-text">
+                ${currentSeason} - Find products suitable for this season!
+            </div>
+        </div>
+    `;
 
-    seasonDisplay.innerHTML = seasonsHTML;
+    seasonDisplay.innerHTML = seasonHTML;
 }
 
 function showForgotPasswordForm() {
