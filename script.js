@@ -102,9 +102,19 @@ function login() {
     auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
             console.log("Login successful", userCredential.user);
-            showSuccess(`Welcome back, ${userCredential.user.email}!`);
-            currentUser = userCredential.user;
-            showHome();
+            // Check if the user document exists in Firestore
+            return db.collection('users').doc(userCredential.user.uid).get();
+        })
+        .then((doc) => {
+            if (doc.exists) {
+                showSuccess(`Welcome back, ${doc.data().name || doc.data().email}!`);
+                currentUser = auth.currentUser;
+                showHome();
+            } else {
+                // User document doesn't exist, sign out and show error
+                auth.signOut();
+                throw new Error('User account has been deleted. Please contact support if you believe this is an error.');
+            }
         })
         .catch((error) => {
             console.error("Login error", error);
@@ -155,8 +165,8 @@ function handleRegisterImagePreview(event) {
 
 // Modify the register function to include image upload
 function register() {
-    const name = document.getElementById('register-name').value;
-    const email = document.getElementById('register-email').value;
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
     const imageFile = document.getElementById('register-image').files[0];
 
@@ -165,7 +175,14 @@ function register() {
         return;
     }
 
-    auth.createUserWithEmailAndPassword(email, password)
+    // Check if the email has been used before
+    auth.fetchSignInMethodsForEmail(email)
+        .then((signInMethods) => {
+            if (signInMethods.length > 0) {
+                throw new Error('This email is already in use. Please use a different email or try to log in.');
+            }
+            return auth.createUserWithEmailAndPassword(email, password);
+        })
         .then((userCredential) => {
             const user = userCredential.user;
             console.log("User registered:", user);
@@ -176,17 +193,14 @@ function register() {
                 email: email,
                 isAdmin: false,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                console.log("User document created in Firestore");
-                return user;
             });
         })
-        .then((user) => {
+        .then(() => {
+            console.log("User document created in Firestore");
             if (imageFile) {
-                return uploadProfileImage(user, imageFile);
-            } else {
-                return user;
+                return uploadProfileImage(auth.currentUser, imageFile);
             }
+            return auth.currentUser;
         })
         .then((user) => {
             showSuccess('Registration successful! Welcome to SBJR Agriculture Shop.');
@@ -922,57 +936,70 @@ function showAdminPanel() {
 function showAllUsers() {
     console.log("Showing all users");
     const content = document.getElementById('content');
-    content.innerHTML = '<h2>All Users</h2>';
-    
-    const usersContainer = document.createElement('div');
-    usersContainer.id = 'all-users-container';
-    content.appendChild(usersContainer);
+    content.innerHTML = '<h2>All Users</h2><div id="all-users-container"></div>';
+    const usersContainer = document.getElementById('all-users-container');
+    usersContainer.innerHTML = '<p>Loading users...</p>';
 
-    db.collection('users').get().then((querySnapshot) => {
+    db.collection('users').get().then(snapshot => {
+        if (snapshot.empty) {
+            usersContainer.innerHTML = '<p>No users found.</p>';
+            return;
+        }
+
         let usersHTML = `
             <div class="users-table-container">
+                <div class="users-table-header">
+                    <h3>User List</h3>
+                    <button onclick="closeUsersTable()" class="close-button">Close</button>
+                </div>
                 <table class="users-table">
                     <thead>
                         <tr>
-                            <th>Profile</th>
+                            <th>Photo</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Account Type</th>
+                            <th>Role</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
         `;
-        
-        querySnapshot.forEach((doc) => {
-            const userData = doc.data();
+
+        snapshot.forEach(doc => {
+            const user = doc.data();
+            user.id = doc.id;
             usersHTML += `
-                <tr>
+                <tr id="user-${user.id}">
+                    <td><img src="${user.photoURL || 'path/to/default/image.jpg'}" alt="Profile Picture" class="user-profile-picture"></td>
+                    <td>${user.name || 'N/A'}</td>
+                    <td>${user.email}</td>
+                    <td>${user.isAdmin ? 'Admin' : 'Customer'}</td>
                     <td>
-                        <img src="${userData.photoURL || 'https://via.placeholder.com/50'}" alt="${userData.name}" class="user-profile-picture">
-                    </td>
-                    <td>${userData.name || 'N/A'}</td>
-                    <td>${userData.email}</td>
-                    <td>${userData.isAdmin ? 'Admin' : 'Customer'}</td>
-                    <td>
-                        <button onclick="viewUserDetails('${doc.id}')" class="view-btn">View</button>
-                        ${!userData.isAdmin ? `<button onclick="deleteUser('${doc.id}')" class="delete-btn">Delete</button>` : ''}
+                        <button onclick="viewUserDetails('${user.id}')" class="view-btn">View</button>
+                        ${!user.isAdmin ? `<button onclick="deleteUser('${user.id}')" class="delete-btn">Delete</button>` : ''}
                     </td>
                 </tr>
             `;
         });
-        
+
         usersHTML += `
                     </tbody>
                 </table>
             </div>
-            <button onclick="showAdminPanel()" class="glow-button">Back to Admin Panel</button>
         `;
-        
+
         usersContainer.innerHTML = usersHTML;
-    }).catch((error) => {
-        console.error("Error fetching users", error);
-        showError('Error fetching users: ' + error.message);
+
+        // Add scroll indicator if necessary
+        if (snapshot.size > 10) {
+            const scrollIndicator = document.createElement('div');
+            scrollIndicator.className = 'scroll-indicator';
+            scrollIndicator.textContent = 'Scroll to see more users';
+            usersContainer.appendChild(scrollIndicator);
+        }
+    }).catch(error => {
+        console.error("Error fetching users:", error);
+        usersContainer.innerHTML = '<p>Error loading users. Please try again later.</p>';
     });
 }
 
@@ -1038,35 +1065,63 @@ function migrateExistingUsers() {
 function deleteUser(userId) {
     console.log("Deleting user", userId);
     if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
-        db.collection('users').doc(userId).get().then((doc) => {
-            if (doc.exists && !doc.data().isAdmin) {
-                // Mark user for deletion
-                return db.collection('users').doc(userId).update({
-                    markedForDeletion: true,
-                    markedForDeletionAt: firebase.firestore.FieldValue.serverTimestamp()
+        let userEmail;
+        let isAdmin;
+
+        db.collection('users').doc(userId).get()
+            .then((doc) => {
+                if (!doc.exists) {
+                    throw new Error("User not found");
+                }
+                const userData = doc.data();
+                userEmail = userData.email;
+                isAdmin = userData.isAdmin;
+
+                if (isAdmin) {
+                    throw new Error("Cannot delete admin users");
+                }
+
+                // Start the deletion process
+                showSuccess('Deletion process started. This may take a few moments...');
+
+                // Delete user document
+                return db.collection('users').doc(userId).delete();
+            })
+            .then(() => {
+                // Delete user's cart
+                return db.collection('carts').doc(userId).delete();
+            })
+            .then(() => {
+                // Delete user's orders
+                return db.collection('orders').where('userId', '==', userId).get();
+            })
+            .then((orderSnapshot) => {
+                const batch = db.batch();
+                orderSnapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
                 });
-            } else {
-                throw new Error("Cannot delete admin users");
-            }
-        }).then(() => {
-            // Delete user's cart
-            return db.collection('carts').doc(userId).delete();
-        }).then(() => {
-            // Delete user's orders
-            return db.collection('orders').where('userId', '==', userId).get();
-        }).then((orderSnapshot) => {
-            const batch = db.batch();
-            orderSnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
+                return batch.commit();
+            })
+            .then(() => {
+                // Delete the user's authentication account
+                return auth.deleteUser(userId);
+            })
+            .then(() => {
+                showSuccess('User account and all associated data have been completely removed from the system');
+                
+                // Remove the deleted user from the UI immediately
+                const userElement = document.getElementById(`user-${userId}`);
+                if (userElement) {
+                    userElement.remove();
+                }
+
+                // Optionally, refresh the entire user list
+                // showAllUsers();
+            })
+            .catch((error) => {
+                console.error("Error deleting user", error);
+                showError('Error deleting user: ' + error.message);
             });
-            return batch.commit();
-        }).then(() => {
-            showSuccess('User marked for deletion and data removed from the system');
-            showAllUsers(); // Refresh the user list
-        }).catch((error) => {
-            console.error("Error deleting user", error);
-            showError('Error deleting user: ' + error.message);
-        });
     }
 }
 
