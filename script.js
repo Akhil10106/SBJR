@@ -222,6 +222,13 @@ function handleImagePreview(event) {
     }
 }
 
+function handleProfileImageChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+        updateProfileImage(file);
+    }
+}
+
 function logout() {
     console.log("Logout function called");
     auth.signOut().then(() => {
@@ -617,11 +624,12 @@ function showProfile() {
 
                 const profileHTML = `
                     <div class="profile-container">
-                        <div class="profile-header">
-                            <div class="profile-image-container">
-                                <img id="profile-image" src="${userData.photoURL || 'https://via.placeholder.com/150'}" alt="Profile Picture">
-                                <button onclick="changeProfileImage()" class="change-image-btn">Change Image</button>
-                            </div>
+            <div class="profile-header">
+                <div class="profile-image-container">
+                    <img id="profile-image" src="${userData.photoURL || 'https://via.placeholder.com/150'}" alt="Profile Picture">
+                    <input type="file" id="profile-image-input" accept="image/*" style="display: none;">
+                    <button onclick="document.getElementById('profile-image-input').click()" class="change-image-btn">Change Image</button>
+                </div>
                             <div class="profile-name-email">
                                 <h2>${userData.name}</h2>
                                 <p>${userData.email}</p>
@@ -650,6 +658,7 @@ function showProfile() {
                     </div>
                 `;
                 content.innerHTML = profileHTML;
+                document.getElementById('profile-image-input').addEventListener('change', handleProfileImageChange);
                 loadUserCoupons();
             } else {
                 console.error("No user document found for ID:", currentUser.uid);
@@ -817,7 +826,8 @@ function updateProfile(updates) {
 }
 
 function updateProfileImage(file) {
-    const storageRef = storage.ref('profile_images/' + currentUser.uid);
+    const storageRef = storage.ref('profile_images/' + currentUser.uid + '/' + file.name);
+    
     storageRef.put(file).then(() => {
         return storageRef.getDownloadURL();
     }).then(url => {
@@ -827,8 +837,10 @@ function updateProfileImage(file) {
         ]);
     }).then(() => {
         showSuccess('Profile image updated successfully');
-        showProfile(); // Refresh the profile view
+        // Update the image in the DOM
+        document.getElementById('profile-image').src = currentUser.photoURL;
     }).catch(error => {
+        console.error("Error updating profile image:", error);
         showError('Error updating profile image: ' + error.message);
     });
 }
