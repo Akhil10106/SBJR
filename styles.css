@@ -275,6 +275,30 @@ nav {
     animation-delay: calc(var(--item-index) * 0.1s);
 }
 
+.scrolling-text-container {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.scrolling-text {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll-left 20s linear infinite;
+}
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
 #season-display li::before {
     content: '🌱';
     margin-right: 10px;
@@ -746,56 +770,217 @@ nav {
 }
 
 /* Admin Panel Styles */
-#add-product-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
+/* Admin Panel Styles */
+.admin-panel {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: var(--card-background);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    animation: fadeInUp 0.5s ease-out;
 }
 
-#product-description {
-    height: 100px;
-    resize: vertical;
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-panel h2 {
+    color: var(--primary-color);
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.admin-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.admin-actions button {
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.admin-actions button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.2);
+}
+
+.admin-actions button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+#product-form-container {
+    background-color: var(--glass-bg);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    transition: all 0.3s ease;
+}
+
+#product-form-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+#form-title {
+    color: var(--primary-color);
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#add-product-form {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+#add-product-form input,
+#add-product-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+#add-product-form input:focus,
+#add-product-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+#add-product-form button {
+    grid-column: 1 / -1;
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#add-product-form button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+#product-list {
+    background-color: var(--glass-bg);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+#product-list h3 {
+    color: var(--primary-color);
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 #admin-product-list {
-    list-style-type: none;
-    padding: 0;
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 #admin-product-list li {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 15px;
-    margin-bottom: 15px;
     background-color: var(--card-background);
     border-radius: 10px;
-    box-shadow: 0 2px 5px var(--shadow-color);
-}
-
-#admin-product-list button {
-    background-color: var(--primary-color);
-    color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 5px 15px var(--shadow-color);
     transition: all 0.3s ease;
-    font-weight: bold;
+    animation: fadeIn 0.5s ease-out;
 }
 
-#admin-product-list button:hover {
-    background-color: var(--error-color);
-    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#admin-product-list li:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+#admin-product-list li img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 20px;
+}
+
+.product-info strong {
+    font-size: 1.2em;
+    color: var(--primary-color);
+}
+
+.product-description {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.product-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: var(--glass-bg);
 }
 
 .edit-btn, .delete-btn {
     padding: 8px 16px;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-weight: bold;
     transition: all 0.3s ease;
 }
 
@@ -811,148 +996,219 @@ nav {
 
 .edit-btn:hover, .delete-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 2px 5px var(--shadow-color);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Users Table Styles */
 .users-table-container {
-    overflow-x: auto;
-    margin-top: 20px;
+    margin-top: 40px;
     background-color: var(--card-background);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px var(--shadow-color);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .users-table-header {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background-color: #2980b9;
+}
+
+.user-details {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    max-width: 500px;
+    margin: 20px auto;
+    text-align: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-profile-picture-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 4px solid var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-details h3 {
+    color: var(--primary-color);
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+.user-details p {
+    color: var(--text-color);
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.user-details-field {
+    background-color: var(--glass-bg);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.user-details-field:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.user-details-label {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-right: 10px;
+}
+
+.user-details-value {
+    color: var(--text-color);
+}
+
+.close-user-details {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.close-user-details:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .users-table-header h3 {
     margin: 0;
+    font-size: 1.5em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .close-button {
-    background-color: #f44336;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.close-button:hover {
-    background-color: #d32f2f;
-}
-
-.view-btn {
-    background-color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.2);
     color: white;
     border: none;
     padding: 8px 16px;
     border-radius: 5px;
     cursor: pointer;
-    font-weight: bold;
     transition: all 0.3s ease;
-    margin-right: 5px;
 }
 
-.view-btn:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px var(--shadow-color);
-}
-
-.view-btn:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
-
-/* Ensure buttons are spaced properly in the users table */
-.users-table td button {
-    margin: 2px;
-}
-
-/* Responsive design for smaller screens */
-@media (max-width: 768px) {
-    .view-btn {
-        padding: 6px 12px;
-        font-size: 0.9em;
-    }
+.close-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 .users-table {
     width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
+    border-collapse: separate;
+    border-spacing: 0 10px;
 }
 
 .users-table th, 
 .users-table td {
+    padding: 15px;
     text-align: left;
-    padding: 12px;
-    border-bottom: 1px solid var(--glass-border);
 }
 
 .users-table th {
     background-color: var(--primary-color);
     color: white;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.users-table tr:last-child td {
-    border-bottom: none;
+.users-table tr {
+    background-color: var(--glass-bg);
+    transition: all 0.3s ease;
 }
 
-.users-table tr:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.05);
+.users-table tr:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px var(--shadow-color);
 }
 
 .user-profile-picture {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
-}
-.user-profile-picture-large {
-    width: 80px;  /* Reduced from 100px */
-    height: 80px; /* Reduced from 100px */
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 15px;
+    border: 2px solid var(--primary-color);
 }
 
-.user-details {
-    background-color: var(--card-background);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px var(--shadow-color);
-    max-width: 400px; /* Reduced from 500px to make the overall container smaller */
-    margin: 0 auto;
+.view-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.user-details img {
-    display: block;
-    margin: 0 auto 15px;
+.view-btn:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
-.user-details p {
-    margin: 10px 0;
-    word-break: break-word; /* This will prevent long emails from overflowing */
-}
-
+/* Responsive design */
 @media (max-width: 768px) {
-    .users-table th,
-    .users-table td {
-        padding: 8px;
+    .admin-panel {
+        padding: 20px;
     }
 
-    .user-profile-picture {
-        width: 30px;
-        height: 30px;
+    .admin-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #add-product-form {
+        grid-template-columns: 1fr;
+    }
+
+    #admin-product-list {
+        grid-template-columns: 1fr;
+    }
+
+    .users-table-container {
+        overflow-x: auto;
+    }
+
+    .users-table th, 
+    .users-table td {
+        padding: 10px;
     }
 }
 .scroll-indicator {
@@ -1149,13 +1405,14 @@ nav {
     resize: vertical;
 }
 /* Profile Section Styles */
+/* Profile Section Styles */
 .profile-container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px;
     background-color: var(--card-background);
-    border-radius: 10px;
-    box-shadow: 0 2px 10px var(--shadow-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px var(--shadow-color);
 }
 
 .profile-header {
@@ -1166,44 +1423,66 @@ nav {
 
 .profile-image-container {
     position: relative;
+    width: 150px;
+    height: 150px;
     margin-right: 30px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 10px var(--shadow-color);
 }
 
 #profile-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 3px solid var(--primary-color);
+    transition: filter 0.3s ease;
+}
+
+.profile-image-container:hover #profile-image {
+    filter: brightness(50%);
 }
 
 .change-image-btn {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    background-color: var(--primary-color);
-    color: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--primary-color);
     border: none;
-    padding: 8px 12px;
-    border-radius: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 0.8em;
-    transition: background-color 0.3s ease;
+    font-size: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.profile-image-container:hover .change-image-btn {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .change-image-btn:hover {
-    background-color: var(--secondary-color);
+    background-color: white;
+    color: var(--secondary-color);
 }
 
 .profile-name-email h2 {
     margin: 0;
     color: var(--primary-color);
+    font-size: 1.8em;
 }
 
 .profile-name-email p {
     margin: 5px 0 0;
     color: var(--text-color);
     opacity: 0.7;
+    font-size: 1em;
 }
 
 .profile-details {
@@ -1213,10 +1492,15 @@ nav {
 .profile-field {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
-    padding: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
     background-color: var(--glass-bg);
-    border-radius: 5px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.profile-field:hover {
+    box-shadow: 0 2px 10px var(--shadow-color);
 }
 
 .field-label {
@@ -1228,35 +1512,77 @@ nav {
 .field-value {
     flex-grow: 1;
     color: var(--text-color);
+    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
 }
 
 .edit-btn {
     background-color: var(--secondary-color);
     color: white;
     border: none;
-    padding: 5px 10px;
-    border-radius: 3px;
+    padding: 8px 15px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 0.8em;
-    transition: background-color 0.3s ease;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
 }
 
 .edit-btn:hover {
     background-color: var(--primary-color);
+    transform: translateY(-2px);
 }
 
-.profile-coupons {
-    background-color: var(--glass-bg);
+.profile-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* Edit Form Styles */
+.edit-form {
+    background-color: var(--card-background);
     padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    margin-top: 20px;
+}
+
+.edit-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--glass-border);
     border-radius: 5px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
 }
 
-.profile-coupons h3 {
-    margin-top: 0;
-    color: var(--primary-color);
+.edit-form button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-@media (max-width: 600px) {
+.edit-form button[type="submit"] {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.edit-form button[type="button"] {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.edit-form button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
     .profile-header {
         flex-direction: column;
         text-align: center;
@@ -1279,6 +1605,7 @@ nav {
 
     .edit-btn {
         margin-top: 10px;
+        align-self: flex-end;
     }
 }
 
