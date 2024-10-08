@@ -136,15 +136,71 @@ function login() {
         });
 }
 
+
+function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+            const user = result.user;
+            console.log("Google sign-in successful", user);
+            return checkUserExists(user.email);
+        })
+        .then((userExists) => {
+            if (userExists) {
+                showSuccess('Logged in successfully with Google');
+                currentUser = firebase.auth().currentUser;
+                showHome();
+            } else {
+                // Sign out the user if they don't have an account
+                firebase.auth().signOut().then(() => {
+                    showError("You haven't created an account yet. Please register first.");
+                });
+            }
+        })
+        .catch((error) => {
+            console.error("Error during Google sign-in", error);
+            showError('Error during Google sign-in: ' + error.message);
+        });
+}
+
 function checkUserExists(email) {
-    return auth.fetchSignInMethodsForEmail(email)
-        .then((signInMethods) => {
-            return signInMethods.length > 0;
+    return db.collection('users')
+        .where('email', '==', email)
+        .get()
+        .then((querySnapshot) => {
+            return !querySnapshot.empty;
         })
         .catch((error) => {
             console.error("Error checking user existence:", error);
-            return false;
+            throw error;
         });
+}
+
+function checkUserAndRedirect(user) {
+    db.collection('users').doc(user.uid).get().then((doc) => {
+        if (doc.exists) {
+            // User exists in Firestore, proceed to home
+            currentUser = user;
+            showHome();
+        } else {
+            // New user, add to Firestore
+            return db.collection('users').doc(user.uid).set({
+                name: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
+                isAdmin: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    }).then(() => {
+        if (!doc.exists) {
+            currentUser = user;
+            showHome();
+        }
+    }).catch((error) => {
+        console.error("Error checking/creating user", error);
+        showError('Error during login: ' + error.message);
+    });
 }
 
 // Add this function to handle image preview
@@ -1464,4 +1520,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.warn("Profile image element not found in the DOM");
     }
-});
+});    
