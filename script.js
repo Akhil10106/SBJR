@@ -754,7 +754,7 @@ function showProfile() {
 function loadUserCoupons() {
     db.collection('coupons')
         .where('userEmail', '==', currentUser.email)
-        .get() // Remove orderBy for now
+        .get()
         .then(querySnapshot => {
             let couponsHtml = '<ul class="coupon-list">';
             if (querySnapshot.empty) {
@@ -762,13 +762,30 @@ function loadUserCoupons() {
             } else {
                 querySnapshot.forEach(doc => {
                     const coupon = doc.data();
+                    const couponId = doc.id;
+                    const createdAt = coupon.createdAt ? coupon.createdAt.toDate() : new Date();
+                    const expirationTime = new Date(createdAt.getTime() + 48 * 60 * 60 * 1000); // 48 hours in milliseconds
+                    const now = new Date();
+                    const isExpired = now > expirationTime || coupon.used;
+                    
+                    const timeLeft = isExpired ? 'Expired' : getTimeLeft(expirationTime);
+
                     couponsHtml += `
-                        <li>
+                        <li id="coupon-${couponId}" class="coupon-item ${isExpired ? 'expired' : ''}">
                             <span class="coupon-code">${coupon.code}</span>
                             <span class="coupon-amount">₹${coupon.amount.toFixed(2)}</span>
-                            <span class="coupon-status">${coupon.used ? 'Used' : 'Available'}</span>
+                            <span class="coupon-status">${isExpired ? 'Expired' : 'Available'}</span>
+                            <span class="coupon-expiry">${timeLeft}</span>
                         </li>
                     `;
+                    
+                    if (!isExpired) {
+                        // Set a timeout to expire the coupon when it reaches its expiration time
+                        const timeToExpire = expirationTime.getTime() - now.getTime();
+                        setTimeout(() => {
+                            expireCoupon(couponId);
+                        }, timeToExpire);
+                    }
                 });
                 couponsHtml += '</ul>';
             }
@@ -777,6 +794,88 @@ function loadUserCoupons() {
         .catch(error => {
             console.error("Error loading coupons", error);
             document.getElementById('user-coupons').innerHTML = 'Error loading coupons. Please try again later.';
+        });
+}
+
+function getTimeLeft(expirationTime) {
+    const now = new Date();
+    const timeLeft = expirationTime.getTime() - now.getTime();
+    
+    if (timeLeft <= 0) {
+        return 'Expired';
+    }
+
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+    return `${hours}h ${minutes}m left`;
+}
+
+function expireCoupon(couponId) {
+    const couponElement = document.getElementById(`coupon-${couponId}`);
+    if (couponElement) {
+        couponElement.classList.add('expired');
+        const statusElement = couponElement.querySelector('.coupon-status');
+        const expiryElement = couponElement.querySelector('.coupon-expiry');
+        if (statusElement) {
+            statusElement.textContent = 'Expired';
+        }
+        if (expiryElement) {
+            expiryElement.textContent = 'Expired';
+        }
+    }
+    
+    // Update the coupon status in Firebase
+    db.collection('coupons').doc(couponId).update({
+        used: true
+    }).catch(error => {
+        console.error("Error updating coupon status", error);
+    });
+}
+
+function showUserCoupons() {
+    if (!currentUser) {
+        showError('Please log in to view your coupons.');
+        return;
+    }
+
+    db.collection('coupons')
+        .where('userEmail', '==', currentUser.email)
+        .get()
+        .then(querySnapshot => {
+            let couponsHTML = '<h2>Your Coupons</h2>';
+            if (querySnapshot.empty) {
+                couponsHTML += '<p>You have no coupons.</p>';
+            } else {
+                couponsHTML += '<ul class="coupon-list">';
+                querySnapshot.forEach(doc => {
+                    const coupon = doc.data();
+                    const couponId = doc.id;
+                    const createdAt = coupon.createdAt ? coupon.createdAt.toDate() : new Date();
+                    const expirationTime = new Date(createdAt.getTime() + 48 * 60 * 60 * 1000); // 48 hours
+                    const now = new Date();
+                    const isExpired = now > expirationTime || coupon.used;
+                    const timeLeft = isExpired ? 'Expired' : getTimeLeft(expirationTime);
+
+                    couponsHTML += `
+                        <li id="coupon-${couponId}" class="coupon-item ${isExpired ? 'expired' : ''}">
+                            <span class="coupon-code">${coupon.code}</span>
+                            <span class="coupon-amount">₹${coupon.amount.toFixed(2)}</span>
+                            <span class="coupon-info">
+                                <span class="coupon-status">${isExpired ? 'Expired' : 'Available'}</span>
+                                <span class="coupon-expiry">${timeLeft}</span>
+                            </span>
+                        </li>
+                    `;
+                });
+                couponsHTML += '</ul>';
+            }
+            couponsHTML += '<button onclick="showProfile()" class="glow-button">Back to Profile</button>';
+            document.getElementById('content').innerHTML = couponsHTML;
+        })
+        .catch(error => {
+            console.error("Error fetching coupons:", error);
+            showError('Error loading coupons. Please try again later.');
         });
 }
 
