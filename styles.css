@@ -2098,6 +2098,103 @@ nav {
     }
 }
 
+.coupon-item {
+    transition: all 0.3s ease;
+    background-color: var(--card-background); /* Use your existing background color variable */
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coupon-code {
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: color 0.3s ease;
+}
+
+.coupon-amount {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.coupon-status {
+    font-size: 0.9em;
+}
+
+.coupon-expiry {
+    font-size: 0.8em;
+    color: var(--text-color);
+}
+
+.coupon-item.expired .coupon-code {
+    color: #888; /* Grey color for expired coupon code */
+}
+
+.coupon-item.expired .coupon-amount,
+.coupon-item.expired .coupon-status,
+.coupon-item.expired .coupon-expiry {
+    opacity: 0.6; /* Slightly fade other coupon information */
+}
+
+.coupon-item.expired .coupon-status,
+.coupon-item.expired .coupon-expiry {
+    color: #ff0000; /* Red color for expired status and expiry */
+}
+
+.coupon-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.coupon-item {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.coupon-code {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.coupon-amount {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.coupon-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.coupon-status, .coupon-expiry {
+    font-size: 0.8em;
+}
+
+.coupon-item.expired .coupon-code {
+    color: #888;
+}
+
+.coupon-item.expired .coupon-amount,
+.coupon-item.expired .coupon-status,
+.coupon-item.expired .coupon-expiry {
+    opacity: 0.6;
+}
+
+.coupon-item.expired .coupon-status,
+.coupon-item.expired .coupon-expiry {
+    color: #ff0000;
+}
+
 @media (max-width: 480px) {
     #content h2,
     #content h3 {
