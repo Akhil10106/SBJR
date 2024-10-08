@@ -69,6 +69,21 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+.google-login-btn {
+    background-color: #4285F4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.google-login-btn i {
+    margin-right: 10px;
+}
+
+.google-login-btn:hover {
+    background-color: #357ae8;
+}
 .container {
     width: 100%;
     max-width: 1200px;
