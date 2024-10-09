@@ -74,17 +74,21 @@ body {
 .google-login-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     background-color: #ffffff;
     color: #757575;
     border: 1px solid #dadce0;
-    border-radius: 20px;
+    border-radius: 4px;
     padding: 1px;
     height: 40px;
+    width: 220px; /* Fixed width for consistent hover effect */
     font-size: 14px;
     font-weight: 500;
     font-family: 'Roboto', sans-serif;
     cursor: pointer;
     transition: background-color 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
 }
 
 .google-login-btn i {
@@ -103,18 +107,28 @@ body {
 
 .google-login-btn .google-icon {
     display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin-right: 8px;
-    margin-left: 8px;
+    width: 18px;
+    height: 18px;
     background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=');
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
+    position: absolute;
+    left: 10px;
+    transition: all 0.3s ease-in-out;
 }
 
-.google-login-btn span {
-    padding: 10px 8px;
+.google-login-btn:hover .google-icon {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.google-login-btn .button-text {
+    transition: all 0.3s ease-in-out;
+}
+
+.google-login-btn:hover .button-text {
+    opacity: 0;
 }
 
 .container {
@@ -187,6 +201,40 @@ input:focus, textarea:focus {
 .theme-toggle:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.or-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 15px 0;
+}
+
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.or-divider span {
+    padding: 0 10px;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+/* Adjust the login form layout */
+#login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Ensure buttons have consistent width */
+#login-form .glow-button,
+#login-form .google-login-btn {
+    width: 20%;
+    border-radius: 20px;
 }
 
 #login-form, #register-form {
