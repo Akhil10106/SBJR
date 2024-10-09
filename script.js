@@ -220,6 +220,43 @@ function handleRegisterImagePreview(event) {
 }
 
 // Modify the register function to include image upload
+
+function registerWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+            const user = result.user;
+            console.log("Google sign-up successful", user);
+            return checkUserExists(user.email);
+        })
+        .then((userExists) => {
+            if (userExists) {
+                // Sign out the user if they already have an account
+                return firebase.auth().signOut().then(() => {
+                    throw new Error("An account with this email already exists. Please log in instead.");
+                });
+            } else {
+                // Create a new user document in Firestore
+                return db.collection('users').doc(firebase.auth().currentUser.uid).set({
+                    name: firebase.auth().currentUser.displayName,
+                    email: firebase.auth().currentUser.email,
+                    photoURL: firebase.auth().currentUser.photoURL,
+                    isAdmin: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        })
+        .then(() => {
+            showSuccess('Account created successfully with Google');
+            currentUser = firebase.auth().currentUser;
+            showHome();
+        })
+        .catch((error) => {
+            console.error("Error during Google sign-up", error);
+            showError(error.message);
+        });
+}
+
 function register() {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
@@ -231,32 +268,20 @@ function register() {
         return;
     }
 
-    // Check if the email has been used before
-    auth.fetchSignInMethodsForEmail(email)
-        .then((signInMethods) => {
-            if (signInMethods.length > 0) {
-                throw new Error('This email is already in use. Please use a different email or try to log in.');
-            }
-            return auth.createUserWithEmailAndPassword(email, password);
-        })
-        .then((userCredential) => {
-            const user = userCredential.user;
-            console.log("User registered:", user);
+    let createdUser;
 
-            // Create a user document in Firestore
-            return db.collection('users').doc(user.uid).set({
-                name: name,
-                email: email,
-                isAdmin: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            createdUser = userCredential.user;
+            console.log("User registered:", createdUser);
+            return createUserProfile(createdUser, name);
         })
         .then(() => {
-            console.log("User document created in Firestore");
+            console.log("User profile created in Firestore");
             if (imageFile) {
-                return uploadProfileImage(auth.currentUser, imageFile);
+                return uploadProfileImage(createdUser, imageFile);
             }
-            return auth.currentUser;
+            return createdUser;
         })
         .then((user) => {
             showSuccess('Registration successful! Welcome to SBJR Agriculture Shop.');
@@ -266,7 +291,23 @@ function register() {
         .catch((error) => {
             console.error("Registration error", error);
             showError('Registration failed: ' + error.message);
+            // If user was created but profile creation failed, delete the user
+            if (createdUser) {
+                createdUser.delete().catch(console.error);
+            }
         });
+}
+
+function createUserProfile(user, name) {
+    return db.collection('users').doc(user.uid).set({
+        name: name,
+        email: user.email,
+        isAdmin: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch((error) => {
+        console.error("Error creating user profile:", error);
+        throw new Error("Failed to create user profile: " + error.message);
+    });
 }
 
 // Add this to your DOMContentLoaded event listener
@@ -997,6 +1038,27 @@ function updateProfile(updates) {
         });
 }
 
+function uploadProfileImage(user, imageFile) {
+    return new Promise((resolve, reject) => {
+        const storageRef = storage.ref('profile_images/' + user.uid + '/' + imageFile.name);
+        
+        storageRef.put(imageFile).then(() => {
+            return storageRef.getDownloadURL();
+        }).then(url => {
+            return Promise.all([
+                user.updateProfile({photoURL: url}),
+                db.collection('users').doc(user.uid).update({photoURL: url})
+            ]);
+        }).then(() => {
+            console.log("Profile image uploaded successfully");
+            resolve(user);
+        }).catch(error => {
+            console.error("Error uploading profile image:", error);
+            reject(error);
+        });
+    });
+}
+
 function updateProfileImage(file) {
     const storageRef = storage.ref('profile_images/' + currentUser.uid + '/' + file.name);
     
@@ -1263,11 +1325,7 @@ function deleteUser(userId) {
                 return batch.commit();
             })
             .then(() => {
-                // Delete the user's authentication account
-                return auth.deleteUser(userId);
-            })
-            .then(() => {
-                showSuccess('User account and all associated data have been completely removed from the system');
+                showSuccess('User data has been removed from the system. The user account may still exist in Authentication.');
                 
                 // Remove the deleted user from the UI immediately
                 const userElement = document.getElementById(`user-${userId}`);
