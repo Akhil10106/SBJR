@@ -30,25 +30,34 @@
                         <span class="button-text">Sign in with Google</span>
                     </button>
                     </div>
-                <div id="register-form" style="display: none;">
-                    <input type="text" id="register-name" placeholder="Full Name">
-                    <input type="text" id="register-email" placeholder="Email">
-                    <input type="password" id="register-password" placeholder="Password">
-                    <div class="image-upload-container">
-                        <label for="register-image" class="image-upload-label">
-                            <i class="fas fa-upload"></i> Upload Profile Picture
-                        </label>
-                        <input type="file" id="register-image" accept="image/*" style="display: none;">
+                    <div id="register-form" style="display: none;">
+                        <input type="text" id="register-name" placeholder="Full Name">
+                        <input type="text" id="register-email" placeholder="Email">
+                        <input type="password" id="register-password" placeholder="Password">
+                        <div class="image-upload-container">
+                            <label for="register-image" class="image-upload-label">
+                                <i class="fas fa-upload"></i> Upload Profile Picture
+                            </label>
+                            <input type="file" id="register-image" accept="image/*" style="display: none;">
+                        </div>
+                        <div id="register-image-preview"></div>
+                        <button onclick="register()" class="glow-button">Register</button>
+                        
+                        <div class="or-divider">
+                            <span>or</span>
+                        </div>
+                        
+                        <button onclick="registerWithGoogle()" class="google-login-btn">
+                            <span class="google-icon"></span>
+                            <span class="button-text">Sign up with Google</span>
+                        </button>
                     </div>
-                    <div id="register-image-preview"></div>
-                    <button onclick="register()" class="glow-button">Register</button>
-                </div>
                 <div id="forgot-password-form" style="display: none;">
                     <input type="email" id="reset-email" placeholder="Enter your email">
                     <button onclick="resetPassword()" class="glow-button">Send Reset Link</button>
                     <button onclick="showLoginForm()" class="back-to-login">Back to Login</button>
                 </div>
-                <p id="auth-toggle">New user? <a href="#" onclick="toggleAuthForm()">Register here</a></p>
+                <p id="auth-toggle">New user? <a href="#" onclick="toggleAuthForm()">Create Account</a></p>
             </div>
         </div>
 
