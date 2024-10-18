@@ -1739,7 +1739,7 @@ function showOwnerPanel() {
                     <img src="owner_image.jpg" alt="Suraj Bhan Jagdish Rai" class="owner-image" id="tilt-image">
                 </div>
                 <div class="owner-details">
-                    <h3>Suraj Bhan Jagdish Rai</h3>
+                    <h3>Gulshan Goel</h3>
                     <p>Founder and Owner of SBJR Agriculture Shop</p>
                 </div>
             </div>
