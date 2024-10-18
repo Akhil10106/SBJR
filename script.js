@@ -55,6 +55,19 @@ function initializeTheme() {
     document.documentElement.setAttribute('data-theme', savedTheme);
 }
 
+// Add this function to check if the user is an owner
+function checkOwnerStatus(uid) {
+    db.collection('users').doc(uid).get().then(doc => {
+        if (doc.exists && doc.data().isOwner) {
+            document.querySelector('.nav-link.owner-only').style.display = 'inline-block';
+        } else {
+            document.querySelector('.nav-link.owner-only').style.display = 'none';
+        }
+    }).catch(error => {
+        console.error("Error checking owner status:", error);
+    });
+}
+
 // Listen for auth state changes
 auth.onAuthStateChanged(user => {
     console.log("Auth state changed", user);
@@ -64,6 +77,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('home-container').style.display = 'block';
         checkAdminStatus(user.uid);
+        checkOwnerStatus(user.uid); // Add this line
         showHome();
     } else {
         console.log("User is signed out");
@@ -792,6 +806,8 @@ function showProfile() {
             `;
         });
 }
+
+// Modify the loadUserCoupons function
 function loadUserCoupons() {
     db.collection('coupons')
         .where('userEmail', '==', currentUser.email)
@@ -811,26 +827,41 @@ function loadUserCoupons() {
                     
                     const timeLeft = isExpired ? 'Expired' : getTimeLeft(expirationTime);
 
+                    // Generate a random discount percentage up to 15%
+                    const discountPercentage = Math.floor(Math.random() * 15) + 1;
+
                     couponsHtml += `
                         <li id="coupon-${couponId}" class="coupon-item ${isExpired ? 'expired' : ''}">
                             <span class="coupon-code">${coupon.code}</span>
-                            <span class="coupon-amount">₹${coupon.amount.toFixed(2)}</span>
+                            <span class="coupon-discount">${discountPercentage}% OFF</span>
                             <span class="coupon-status">${isExpired ? 'Expired' : 'Available'}</span>
                             <span class="coupon-expiry">${timeLeft}</span>
+                            <button onclick="deleteCoupon('${couponId}')" class="delete-btn">Delete</button>
                         </li>
                     `;
-                    
-                    if (!isExpired) {
-                        // Set a timeout to expire the coupon when it reaches its expiration time
-                        const timeToExpire = expirationTime.getTime() - now.getTime();
-                        setTimeout(() => {
-                            expireCoupon(couponId);
-                        }, timeToExpire);
-                    }
                 });
                 couponsHtml += '</ul>';
             }
             document.getElementById('user-coupons').innerHTML = couponsHtml;
+            
+            // Update the time every second for non-expired coupons
+            if (!querySnapshot.empty) {
+                setInterval(() => {
+                    querySnapshot.forEach(doc => {
+                        const coupon = doc.data();
+                        const couponId = doc.id;
+                        const createdAt = coupon.createdAt ? coupon.createdAt.toDate() : new Date();
+                        const expirationTime = new Date(createdAt.getTime() + 48 * 60 * 60 * 1000);
+                        const now = new Date();
+                        const isExpired = now > expirationTime || coupon.used;
+                        
+                        if (!isExpired) {
+                            const timeLeft = getTimeLeft(expirationTime);
+                            document.querySelector(`#coupon-${couponId} .coupon-expiry`).textContent = timeLeft;
+                        }
+                    });
+                }, 1000);
+            }
         })
         .catch(error => {
             console.error("Error loading coupons", error);
@@ -838,9 +869,10 @@ function loadUserCoupons() {
         });
 }
 
+// Update the getTimeLeft function to include seconds
 function getTimeLeft(expirationTime) {
     const now = new Date();
-    const timeLeft = expirationTime.getTime() - now.getTime();
+    const timeLeft = expirationTime - now;
     
     if (timeLeft <= 0) {
         return 'Expired';
@@ -848,8 +880,9 @@ function getTimeLeft(expirationTime) {
 
     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-    return `${hours}h ${minutes}m left`;
+    return `${hours}h ${minutes}m ${seconds}s`;
 }
 
 function expireCoupon(couponId) {
@@ -874,6 +907,7 @@ function expireCoupon(couponId) {
     });
 }
 
+// Modify the showUserCoupons function similarly
 function showUserCoupons() {
     if (!currentUser) {
         showError('Please log in to view your coupons.');
@@ -898,14 +932,18 @@ function showUserCoupons() {
                     const isExpired = now > expirationTime || coupon.used;
                     const timeLeft = isExpired ? 'Expired' : getTimeLeft(expirationTime);
 
+                    // Generate a random discount percentage up to 15%
+                    const discountPercentage = Math.floor(Math.random() * 15) + 1;
+
                     couponsHTML += `
                         <li id="coupon-${couponId}" class="coupon-item ${isExpired ? 'expired' : ''}">
                             <span class="coupon-code">${coupon.code}</span>
-                            <span class="coupon-amount">₹${coupon.amount.toFixed(2)}</span>
+                            <span class="coupon-discount">${discountPercentage}% OFF</span>
                             <span class="coupon-info">
                                 <span class="coupon-status">${isExpired ? 'Expired' : 'Available'}</span>
                                 <span class="coupon-expiry">${timeLeft}</span>
                             </span>
+                            <button onclick="deleteCoupon('${couponId}')" class="delete-btn">Delete</button>
                         </li>
                     `;
                 });
@@ -913,6 +951,25 @@ function showUserCoupons() {
             }
             couponsHTML += '<button onclick="showProfile()" class="glow-button">Back to Profile</button>';
             document.getElementById('content').innerHTML = couponsHTML;
+
+            // Update the time every second for non-expired coupons
+            if (!querySnapshot.empty) {
+                setInterval(() => {
+                    querySnapshot.forEach(doc => {
+                        const coupon = doc.data();
+                        const couponId = doc.id;
+                        const createdAt = coupon.createdAt ? coupon.createdAt.toDate() : new Date();
+                        const expirationTime = new Date(createdAt.getTime() + 48 * 60 * 60 * 1000);
+                        const now = new Date();
+                        const isExpired = now > expirationTime || coupon.used;
+                        
+                        if (!isExpired) {
+                            const timeLeft = getTimeLeft(expirationTime);
+                            document.querySelector(`#coupon-${couponId} .coupon-expiry`).textContent = timeLeft;
+                        }
+                    });
+                }, 1000);
+            }
         })
         .catch(error => {
             console.error("Error fetching coupons:", error);
@@ -1656,6 +1713,44 @@ function loadFeaturedProducts() {
         });
 }
 
+// Add this new function to handle coupon deletion
+function deleteCoupon(couponId) {
+    if (confirm('Are you sure you want to delete this coupon?')) {
+        db.collection('coupons').doc(couponId).delete()
+            .then(() => {
+                showSuccess('Coupon deleted successfully');
+                loadUserCoupons(); // Reload the coupons list
+            })
+            .catch(error => {
+                console.error("Error deleting coupon:", error);
+                showError('Error deleting coupon. Please try again.');
+            });
+    }
+}
+
+// Modify the showOwnerPanel function
+function showOwnerPanel() {
+    console.log("Showing owner panel");
+    const content = `
+        <h2>Owner Information</h2>
+        <div class="owner-info">
+            <div class="owner-content">
+                <div class="owner-image-container" id="tilt-container">
+                    <img src="owner_image.jpg" alt="Suraj Bhan Jagdish Rai" class="owner-image" id="tilt-image">
+                </div>
+                <div class="owner-details">
+                    <h3>Suraj Bhan Jagdish Rai</h3>
+                    <p>Founder and Owner of SBJR Agriculture Shop</p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('content').innerHTML = content;
+
+    // Call the function to set up the tilt effect after the content is added to the DOM
+    setupTiltEffect();
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM content loaded");
@@ -1677,4 +1772,34 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.warn("Profile image element not found in the DOM");
     }
-});    
+});
+
+function setupTiltEffect() {
+    const container = document.getElementById('tilt-container');
+    const image = document.getElementById('tilt-image');
+
+    if (!container || !image) return;
+
+    const maxTilt = 10; // Maximum tilt angle in degrees
+
+    container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const percentX = (x - centerX) / centerX;
+        const percentY = -((y - centerY) / centerY); // Invert Y-axis
+
+        const tiltX = maxTilt * percentY;
+        const tiltY = maxTilt * percentX;
+
+        image.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.05, 1.05, 1.05)`;
+    });
+
+    container.addEventListener('mouseleave', () => {
+        image.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+    });
+}
