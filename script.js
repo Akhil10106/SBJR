@@ -368,11 +368,6 @@ function logout() {
 
 function showHome() {
     console.log("Showing home page");
-    if (!currentUser) {
-        console.error("No user logged in");
-        showError('Please log in to view the home page.');
-        return;
-    }
     db.collection('users').doc(currentUser.uid).get().then(doc => {
         const userData = doc.data();
         console.log("User data", userData);
@@ -1165,12 +1160,12 @@ function showAdminPanel() {
     db.collection('users').doc(currentUser.uid).get().then(doc => {
         if (doc.exists && doc.data().isAdmin) {
             const content = `
-                <h2>Admin Panel</h2>
-                <button onclick="showAllUsers()" class="glow-button">Show All Users</button>
-                 <button onclick="migrateExistingUsers()" class="glow-button">Migrate Existing Users</button>
+                <h2><i class="fas fa-cog"></i> Admin Panel</h2>
+                <button onclick="showAllUsers()" class="glow-button"><i class="fas fa-users"></i> Show All Users</button>
+                <button onclick="migrateExistingUsers()" class="glow-button"><i class="fas fa-user-plus"></i> Migrate Existing Users</button>
                 <div id="all-users-container"></div>
                 <div id="product-form-container">
-                    <h3 id="form-title">Add New Product</h3>
+                    <h3 id="form-title"><i class="fas fa-plus-circle"></i> Add New Product</h3>
                     <form id="add-product-form">
                         <input type="hidden" id="product-id">
                         <input type="text" id="product-name" placeholder="Product Name" required>
@@ -1181,12 +1176,12 @@ function showAdminPanel() {
                             <p>Current Image:</p>
                             <img id="current-image" style="max-width: 200px; margin: 10px 0;">
                         </div>
-                        <button type="submit" class="glow-button" id="form-submit-btn">Add Product</button>
-                        <button type="button" class="glow-button" id="cancel-edit-btn" style="display: none;" onclick="cancelEdit()">Cancel Edit</button>
+                        <button type="submit" class="glow-button" id="form-submit-btn"><i class="fas fa-save"></i> Add Product</button>
+                        <button type="button" class="glow-button" id="cancel-edit-btn" style="display: none;" onclick="cancelEdit()"><i class="fas fa-times"></i> Cancel Edit</button>
                     </form>
                 </div>
                 <div id="product-list">
-                    <h3>Current Products</h3>
+                    <h3><i class="fas fa-list"></i> Current Products</h3>
                     <ul id="admin-product-list"></ul>
                 </div>
             `;
@@ -1455,12 +1450,12 @@ function updateAdminProductList() {
             li.innerHTML = `
                 <img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover;">
                 <div class="product-info">
-                    <strong>${product.name}</strong> - $${product.price}
-                    <p class="product-description">${product.description}</p>
+                    <strong><i class="fas fa-box"></i> ${product.name}</strong> - <i class="fas fa-tag"></i> $${product.price}
+                    <p class="product-description"><i class="fas fa-info-circle"></i> ${product.description}</p>
                 </div>
                 <div class="product-actions">
-                    <button onclick="editProduct('${doc.id}')" class="edit-btn">Edit</button>
-                    <button onclick="deleteProduct('${doc.id}')" class="delete-btn">Delete</button>
+                    <button onclick="editProduct('${doc.id}')" class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
+                    <button onclick="deleteProduct('${doc.id}')" class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
                 </div>
             `;
             list.appendChild(li);
@@ -1697,9 +1692,9 @@ function loadFeaturedProducts() {
                     featuredProductsHTML += `
                         <div class="product-card">
                             <img src="${product.image}" alt="${product.name}" onclick="showProductDetails('${doc.id}')">
-                            <h4>${product.name}</h4>
-                            <p>₹${product.price}</p>
-                            <button onclick="addToCart('${doc.id}')" class="add-to-cart-btn">Add to Cart</button>
+                            <h4><i class="fas fa-box"></i> ${product.name}</h4>
+                            <p><i class="fas fa-tag"></i> ₹${product.price}</p>
+                            <button onclick="addToCart('${doc.id}')" class="add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add to Cart</button>
                         </div>
                     `;
                 });
@@ -1732,22 +1727,21 @@ function deleteCoupon(couponId) {
 function showOwnerPanel() {
     console.log("Showing owner panel");
     const content = `
-        <h2>Owner Information</h2>
+        <h2><i class="fas fa-user-tie"></i> Owner Information</h2>
         <div class="owner-info">
             <div class="owner-content">
                 <div class="owner-image-container" id="tilt-container">
                     <img src="owner_image.jpg" alt="Suraj Bhan Jagdish Rai" class="owner-image" id="tilt-image">
                 </div>
                 <div class="owner-details">
-                    <h3>Gulshan Goel</h3>
-                    <p>Founder and Owner of SBJR Agriculture Shop</p>
+                    <h3><i class="fas fa-user"></i> Gulshan Goel</h3>
+                    <p><i class="fas fa-briefcase"></i> Founder and Owner of SBJR Agriculture Shop</p>
                 </div>
             </div>
         </div>
     `;
     document.getElementById('content').innerHTML = content;
 
-    // Call the function to set up the tilt effect after the content is added to the DOM
     setupTiltEffect();
 }
 
