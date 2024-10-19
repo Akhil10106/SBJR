@@ -831,7 +831,7 @@ function loadUserCoupons() {
                             <span class="coupon-discount">${discountPercentage}% OFF</span>
                             <span class="coupon-status">${isExpired ? 'Expired' : 'Available'}</span>
                             <span class="coupon-expiry">${timeLeft}</span>
-                            <button onclick="deleteCoupon('${couponId}')" class="delete-btn">Delete</button>
+                            ${isExpired ? `<button onclick="deleteCoupon('${couponId}')" class="delete-btn">Delete</button>` : ''}
                         </li>
                     `;
                 });
@@ -850,9 +850,23 @@ function loadUserCoupons() {
                         const now = new Date();
                         const isExpired = now > expirationTime || coupon.used;
                         
-                        if (!isExpired) {
-                            const timeLeft = getTimeLeft(expirationTime);
-                            document.querySelector(`#coupon-${couponId} .coupon-expiry`).textContent = timeLeft;
+                        const couponElement = document.querySelector(`#coupon-${couponId}`);
+                        if (couponElement) {
+                            if (!isExpired) {
+                                const timeLeft = getTimeLeft(expirationTime);
+                                couponElement.querySelector('.coupon-expiry').textContent = timeLeft;
+                            } else {
+                                couponElement.classList.add('expired');
+                                couponElement.querySelector('.coupon-status').textContent = 'Expired';
+                                couponElement.querySelector('.coupon-expiry').textContent = 'Expired';
+                                if (!couponElement.querySelector('.delete-btn')) {
+                                    const deleteButton = document.createElement('button');
+                                    deleteButton.className = 'delete-btn';
+                                    deleteButton.textContent = 'Delete';
+                                    deleteButton.onclick = () => deleteCoupon(couponId);
+                                    couponElement.appendChild(deleteButton);
+                                }
+                            }
                         }
                     });
                 }, 1000);
@@ -938,7 +952,7 @@ function showUserCoupons() {
                                 <span class="coupon-status">${isExpired ? 'Expired' : 'Available'}</span>
                                 <span class="coupon-expiry">${timeLeft}</span>
                             </span>
-                            <button onclick="deleteCoupon('${couponId}')" class="delete-btn">Delete</button>
+                            ${isExpired ? `<button onclick="deleteCoupon('${couponId}')" class="delete-btn">Delete</button>` : ''}
                         </li>
                     `;
                 });
@@ -958,9 +972,23 @@ function showUserCoupons() {
                         const now = new Date();
                         const isExpired = now > expirationTime || coupon.used;
                         
-                        if (!isExpired) {
-                            const timeLeft = getTimeLeft(expirationTime);
-                            document.querySelector(`#coupon-${couponId} .coupon-expiry`).textContent = timeLeft;
+                        const couponElement = document.querySelector(`#coupon-${couponId}`);
+                        if (couponElement) {
+                            if (!isExpired) {
+                                const timeLeft = getTimeLeft(expirationTime);
+                                couponElement.querySelector('.coupon-expiry').textContent = timeLeft;
+                            } else {
+                                couponElement.classList.add('expired');
+                                couponElement.querySelector('.coupon-status').textContent = 'Expired';
+                                couponElement.querySelector('.coupon-expiry').textContent = 'Expired';
+                                if (!couponElement.querySelector('.delete-btn')) {
+                                    const deleteButton = document.createElement('button');
+                                    deleteButton.className = 'delete-btn';
+                                    deleteButton.textContent = 'Delete';
+                                    deleteButton.onclick = () => deleteCoupon(couponId);
+                                    couponElement.appendChild(deleteButton);
+                                }
+                            }
                         }
                     });
                 }, 1000);
