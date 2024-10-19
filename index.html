@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div id="message-container"></div>
@@ -63,15 +64,15 @@
 
         <div id="home-container" style="display: none;">
             <nav class="glass-panel">
-                <a href="#" onclick="showHome()" class="nav-link">Home</a>
-                <a href="#" onclick="showShop()" class="nav-link">Shop</a>
-                <a href="#" onclick="showCart()" class="nav-link">Cart <span id="cart-count">0</span></a>
-                <a href="#" onclick="showProfile()" class="nav-link">Profile</a>
-                <a href="#" onclick="showAdminPanel()" class="nav-link admin-only" style="display: none;">Admin</a>
-                <a href="#" onclick="showOwnerPanel()" class="nav-link">Owner</a>
-                <button onclick="logout()" class="glow-button">Logout</button>
+                <a href="#" onclick="showHome()" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="#" onclick="showShop()" class="nav-link"><i class="fas fa-store"></i> Shop</a>
+                <a href="#" onclick="showCart()" class="nav-link"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count">0</span></a>
+                <a href="#" onclick="showProfile()" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+                <a href="#" onclick="showAdminPanel()" class="nav-link admin-only" style="display: none;"><i class="fas fa-cog"></i> Admin</a>
+                <a href="#" onclick="showOwnerPanel()" class="nav-link"><i class="fas fa-user-tie"></i> Owner</a>
+                <button onclick="logout()" class="glow-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
-                    🌓
+                    <i class="fas fa-moon"></i>
                 </button>
             </nav>
             <div id="season-display" class="glass-panel"></div>
