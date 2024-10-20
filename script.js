@@ -1764,11 +1764,12 @@ function showOwnerPanel() {
         <div class="owner-info">
             <div class="owner-content">
                 <div class="owner-image-container" id="tilt-container">
-                    <img src="owner_image.jpg" alt="Suraj Bhan Jagdish Rai" class="owner-image" id="tilt-image">
+                    <img src="owner_image.jpg" alt="Gulshan Goel" class="owner-image" id="tilt-image">
                 </div>
                 <div class="owner-details">
                     <h3><i class="fas fa-user"></i> Gulshan Goel</h3>
                     <p><i class="fas fa-briefcase"></i> Founder and Owner of SBJR Agriculture Shop</p>
+                    <p><i class="fas fa-info-circle"></i> With over 20 years of experience in agriculture, Gulshan Goel has been a pioneer in bringing innovative farming solutions to the community.</p>
                 </div>
             </div>
         </div>
