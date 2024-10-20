@@ -444,8 +444,7 @@ function showShop() {
     let content = `
         <h2>Shop</h2>
         <div id="search-bar" class="glass-panel">
-            <input type="text" id="search-input" placeholder="Search products...">
-            <button onclick="searchProducts()" class="glow-button">Search</button>
+            <input type="text" id="search-input" placeholder="Search products..." oninput="liveSearch()">
         </div>
         <div id="product-list" class="product-grid">
         </div>
@@ -476,6 +475,7 @@ function createProductCard(id, product) {
                 <img src="${product.image}" alt="${product.name}" class="product-image">
                 <div class="product-title">${product.name}</div>
                 <div class="product-price">₹${product.price}</div>
+                <div class="product-description">${product.description.substring(0, 50)}...</div>
             </a>
             <button onclick="addToCart('${id}')" class="add-to-cart">Add to Cart</button>
         </div>
@@ -511,22 +511,27 @@ function showProductDetails(productId) {
     });
 }
 
-function searchProducts() {
+function liveSearch() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
-    if (!searchTerm) {
-        loadProducts();
+    
+    if (searchTerm === '') {
+        loadProducts(); // Load all products if search term is empty
         return;
     }
-    
+
     db.collection('products')
-        .where('searchTerms', 'array-contains', searchTerm)
         .get()
         .then((querySnapshot) => {
             let productsHtml = '';
             querySnapshot.forEach((doc) => {
                 const product = doc.data();
-                productsHtml += createProductCard(doc.id, product);
+                const searchableText = `${product.name} ${product.description}`.toLowerCase();
+                
+                if (searchableText.includes(searchTerm)) {
+                    productsHtml += createProductCard(doc.id, product);
+                }
             });
+            
             document.getElementById('product-list').innerHTML = productsHtml || '<p>No products found.</p>';
         })
         .catch((error) => {
