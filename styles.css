@@ -338,11 +338,31 @@ nav {
 }
 
 #search-input {
-    flex-grow: 1;
-    margin-right: 10px;
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 2px solid var(--primary-color); /* Add border */
+    border-radius: 25px; /* Increased border-radius for a pill shape */
+    background-color: var(--glass-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease; /* Smooth transition for hover and focus effects */
 }
 
+#search-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3); /* Outer glow effect */
+    border-color: var(--secondary-color); /* Change border color on focus */
+}
 
+#search-input:hover {
+    border-color: var(--secondary-color); /* Change border color on hover */
+}
+
+/* Add a placeholder style */
+#search-input::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
+}
 
 /* Seasons */
 
@@ -2456,4 +2476,38 @@ nav {
 
 .owner-info li {
     margin: 10px 0;
+}
+
+#search-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 2px solid var(--primary-color); /* Add border */
+    border-radius: 25px; /* Increased border-radius for a pill shape */
+    background-color: var(--glass-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease; /* Smooth transition for hover and focus effects */
+}
+
+#search-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3); /* Outer glow effect */
+    border-color: var(--secondary-color); /* Change border color on focus */
+}
+
+#search-input:hover {
+    border-color: var(--secondary-color); /* Change border color on hover */
+}
+
+/* Add a placeholder style */
+#search-input::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+.product-description {
+    font-size: 0.8em;
+    color: var(--text-color);
+    opacity: 0.7;
+    margin-top: 5px;
 }
