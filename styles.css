@@ -2423,9 +2423,9 @@ nav {
     max-width: 350px;
     margin: 0 auto 20px;
     position: relative;
-    padding-top: 45%; /* 16:9 aspect ratio */
+    padding-top: 45%; /* 16:9 aspect ratio for laptop view */
     overflow: hidden;
-    perspective: 1000px; /* Add perspective for 3D effect */
+    perspective: 1000px;
 }
 
 .owner-image {
@@ -2436,12 +2436,36 @@ nav {
     height: 100%;
     object-fit: cover;
     border-radius: 10px;
-    transition: transform 0.1s ease-out; /* Smooth transition for tilt effect */
+    transition: transform 0.1s ease-out;
+}
+
+@media (max-width: 1024px) {
+    .owner-image-container {
+        padding-top: 56.25%; /* 16:9 aspect ratio for tablets */
+    }
+}
+
+@media (max-width: 768px) {
+    .owner-image-container {
+        max-width: 250px;
+        padding-top: 100%; /* 1:1 aspect ratio for mobile */
+    }
+
+    .owner-image {
+        object-fit: contain; /* Ensure the full image is visible on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .owner-image-container {
+        max-width: 200px;
+    }
 }
 
 .owner-details {
     flex: 1;
     padding-top: 20px;
+    text-align: center;
 }
 
 .owner-details h3 {
@@ -2457,6 +2481,28 @@ nav {
 /* Add hover effect */
 .owner-image-container:hover .owner-image {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.owner-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media (min-width: 769px) {
+    .owner-content {
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .owner-image-container {
+        margin-right: 30px;
+    }
+
+    .owner-details {
+        text-align: left;
+    }
 }
 
 .owner-info h3 {
