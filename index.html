@@ -70,7 +70,6 @@
                 <a href="#" onclick="showCart()" class="nav-link"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count">0</span></a>
                 <a href="#" onclick="showProfile()" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 <a href="#" onclick="showAdminPanel()" class="nav-link admin-only" style="display: none;"><i class="fas fa-cog"></i> Admin</a>
-                <a href="#" onclick="showOwnerPanel()" class="nav-link"><i class="fas fa-user-tie"></i> Owner</a>
                 <button onclick="logout()" class="glow-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
                     <i class="fas fa-moon"></i>
@@ -89,5 +88,14 @@
 
     <!-- Your main script -->
     <script src="script.js"></script>
+
+    <!-- Add this just before the closing </body> tag -->
+    <nav id="mobile-navbar" class="mobile-nav">
+        <a href="#" onclick="showHome()" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="#" onclick="showShop()" class="nav-link"><i class="fas fa-store"></i><span>Shop</span></a>
+        <a href="#" onclick="showCart()" class="nav-link"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+        <a href="#" onclick="showProfile()" class="nav-link"><i class="fas fa-user"></i><span>Profile</span></a>
+        <a href="#" onclick="showMore()" class="nav-link"><i class="fas fa-ellipsis-h"></i><span>More</span></a>
+    </nav>
 </body>
 </html>
