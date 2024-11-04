@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="SBJR Agriculture Shop - Your one-stop destination for high-quality agricultural products">
-    <meta name="keywords" content="agriculture, farming, seeds, fertilizers, tools, equipment">
     <title>SBJR- Suraj Bhan Jagdish Rai</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div id="message-container"></div>
@@ -20,59 +18,45 @@
                 <div id="login-form">
                     <input type="text" id="login-email" placeholder="Email">
                     <input type="password" id="login-password" placeholder="Password">
-                    <a href="#" onclick="showForgotPasswordForm()" class="forgot-password-link">Forgot Password?</a>
                     <button onclick="login()" class="glow-button">Login</button>
-                    
-                    <div class="or-divider">
-                        <span>or</span>
-                    </div>
-                    
-                    <button onclick="loginWithGoogle()" class="google-login-btn" aria-label="Sign in with Google">
+                    <button onclick="loginWithGoogle()" class="google-login-btn">
                         <span class="google-icon"></span>
-                        <span class="button-text">Sign in with Google</span>
+                        <span>Sign in with Google</span>
                     </button>
+                    <a href="#" onclick="showForgotPasswordForm()" class="forgot-password-link">Forgot Password?</a>
+                </div>
+                <div id="register-form" style="display: none;">
+                    <input type="text" id="register-name" placeholder="Full Name">
+                    <input type="text" id="register-email" placeholder="Email">
+                    <input type="password" id="register-password" placeholder="Password">
+                    <div class="image-upload-container">
+                        <label for="register-image" class="image-upload-label">
+                            <i class="fas fa-upload"></i> Upload Profile Picture
+                        </label>
+                        <input type="file" id="register-image" accept="image/*" style="display: none;">
                     </div>
-                    <div id="register-form" style="display: none;">
-                        <input type="text" id="register-name" placeholder="Full Name">
-                        <input type="text" id="register-email" placeholder="Email">
-                        <input type="password" id="register-password" placeholder="Password">
-                        <div class="image-upload-container">
-                            <label for="register-image" class="image-upload-label">
-                                <i class="fas fa-upload"></i> Upload Profile Picture
-                            </label>
-                            <input type="file" id="register-image" accept="image/*" style="display: none;">
-                        </div>
-                        <div id="register-image-preview"></div>
-                        <button onclick="register()" class="glow-button">Register</button>
-                        
-                        <div class="or-divider">
-                            <span>or</span>
-                        </div>
-                        
-                        <button onclick="registerWithGoogle()" class="google-login-btn" aria-label="Sign up with Google">
-                            <span class="google-icon"></span>
-                            <span class="button-text">Sign up with Google</span>
-                        </button>
-                    </div>
+                    <div id="register-image-preview"></div>
+                    <button onclick="register()" class="glow-button">Register</button>
+                </div>
                 <div id="forgot-password-form" style="display: none;">
                     <input type="email" id="reset-email" placeholder="Enter your email">
                     <button onclick="resetPassword()" class="glow-button">Send Reset Link</button>
                     <button onclick="showLoginForm()" class="back-to-login">Back to Login</button>
                 </div>
-                <p id="auth-toggle">New user? <a href="#" onclick="toggleAuthForm()">Create Account</a></p>
+                <p id="auth-toggle">New user? <a href="#" onclick="toggleAuthForm()">Register here</a></p>
             </div>
         </div>
 
         <div id="home-container" style="display: none;">
             <nav class="glass-panel">
-                <a href="#" onclick="showHome()" class="nav-link"><i class="fas fa-home"></i> Home</a>
-                <a href="#" onclick="showShop()" class="nav-link"><i class="fas fa-store"></i> Shop</a>
-                <a href="#" onclick="showCart()" class="nav-link"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count">0</span></a>
-                <a href="#" onclick="showProfile()" class="nav-link"><i class="fas fa-user"></i> Profile</a>
-                <a href="#" onclick="showAdminPanel()" class="nav-link admin-only" style="display: none;"><i class="fas fa-cog"></i> Admin</a>
-                <button onclick="logout()" class="glow-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <a href="#" onclick="showHome()" class="nav-link">Home</a>
+                <a href="#" onclick="showShop()" class="nav-link">Shop</a>
+                <a href="#" onclick="showCart()" class="nav-link">Cart <span id="cart-count">0</span></a>
+                <a href="#" onclick="showProfile()" class="nav-link">Profile</a>
+                <a href="#" onclick="showAdminPanel()" class="nav-link admin-only" style="display: none;">Admin</a>
+                <button onclick="logout()" class="glow-button">Logout</button>
                 <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
-                    <i class="fas fa-moon"></i>
+                    🌓
                 </button>
             </nav>
             <div id="season-display" class="glass-panel"></div>
@@ -88,14 +72,5 @@
 
     <!-- Your main script -->
     <script src="script.js"></script>
-
-    <!-- Add this just before the closing </body> tag -->
-    <nav id="mobile-navbar" class="mobile-nav">
-        <a href="#" onclick="showHome()" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
-        <a href="#" onclick="showShop()" class="nav-link"><i class="fas fa-store"></i><span>Shop</span></a>
-        <a href="#" onclick="showCart()" class="nav-link"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
-        <a href="#" onclick="showProfile()" class="nav-link"><i class="fas fa-user"></i><span>Profile</span></a>
-        <a href="#" onclick="showMore()" class="nav-link"><i class="fas fa-ellipsis-h"></i><span>More</span></a>
-    </nav>
 </body>
 </html>
